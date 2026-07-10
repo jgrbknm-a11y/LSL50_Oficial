@@ -1,0 +1,7 @@
+.scoreboard{display:grid;grid-template-columns:1fr 80px 1fr;gap:10px;align-items:center}
+.team{background:#121a24;border:1px solid #233046;border-radius:12px;padding:14px}
+.team h3{margin:0}
+.score{font-size:48px;text-align:center;font-weight:800}
+.inning{display:grid;grid-template-columns:repeat(9,1fr);gap:4px}
+.inning div{background:#0f1622;border:1px solid #22314b;border-radius:6px;text-align:center;padding:8px 0}
+.controls{display:flex;gap:10px;flex-wrap:wrap}

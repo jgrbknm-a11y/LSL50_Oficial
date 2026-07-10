@@ -1,0 +1,23 @@
+{
+  "name": "players",
+  "data": [
+    {
+      "id": "P-001",
+      "team_id": "L50-001",
+      "name": "José Ramírez",
+      "number": 25,
+      "position": "IF",
+      "bats": "R",
+      "throws": "R"
+    },
+    {
+      "id": "P-002",
+      "team_id": "L50-002",
+      "name": "Miguel Soto",
+      "number": 8,
+      "position": "OF",
+      "bats": "R",
+      "throws": "R"
+    }
+  ]
+}

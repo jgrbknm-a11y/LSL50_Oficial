@@ -1,0 +1,1361 @@
+{
+  "summary": {
+    "total_importable": 87,
+    "by_team": {
+      "Bucaneros": 18,
+      "Caribeños": 16,
+      "Cubs": 19,
+      "Hispanos": 18,
+      "Sharks": 16
+    },
+    "skipped_duplicates": [
+      {
+        "team": "Caribeños",
+        "number": "17",
+        "first_name": "Jose",
+        "last_name": "Rojas",
+        "birth_date": "1970-11-23",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+        "age": 55,
+        "reason": "duplicate name/date in same team"
+      }
+    ],
+    "missing_birth_dates": [
+      {
+        "team": "Bucaneros",
+        "number": "3",
+        "first_name": "Carlos",
+        "last_name": "Paez",
+        "birth_date": null,
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": null
+      },
+      {
+        "team": "Bucaneros",
+        "number": "4",
+        "first_name": "Angel",
+        "last_name": "Martinez",
+        "birth_date": null,
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": null
+      },
+      {
+        "team": "Bucaneros",
+        "number": "5",
+        "first_name": "Lionel",
+        "last_name": "Martinez",
+        "birth_date": null,
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": null
+      },
+      {
+        "team": "Bucaneros",
+        "number": "6",
+        "first_name": "Jose",
+        "last_name": "Sojo",
+        "birth_date": null,
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": null
+      },
+      {
+        "team": "Bucaneros",
+        "number": "7",
+        "first_name": "Freddy",
+        "last_name": "Alayon",
+        "birth_date": null,
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": null
+      },
+      {
+        "team": "Bucaneros",
+        "number": "8",
+        "first_name": "Dennis",
+        "last_name": "Quillarque",
+        "birth_date": null,
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": null
+      },
+      {
+        "team": "Bucaneros",
+        "number": "10",
+        "first_name": "Alfonso",
+        "last_name": "Davila",
+        "birth_date": null,
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": null
+      },
+      {
+        "team": "Bucaneros",
+        "number": "11",
+        "first_name": "Gene",
+        "last_name": "Brandt",
+        "birth_date": null,
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": null
+      },
+      {
+        "team": "Bucaneros",
+        "number": "14",
+        "first_name": "Kelwin",
+        "last_name": "Aristigueta",
+        "birth_date": null,
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": null
+      },
+      {
+        "team": "Bucaneros",
+        "number": "15",
+        "first_name": "Hugo",
+        "last_name": "Ortega",
+        "birth_date": null,
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": null
+      },
+      {
+        "team": "Bucaneros",
+        "number": "16",
+        "first_name": "Rafael",
+        "last_name": "Gimenez",
+        "birth_date": null,
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": null
+      },
+      {
+        "team": "Bucaneros",
+        "number": "18",
+        "first_name": "Atahualpa",
+        "last_name": "Soteldo",
+        "birth_date": null,
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": null
+      }
+    ],
+    "under_50": [
+      {
+        "team": "Sharks",
+        "number": "1",
+        "first_name": "Pablo",
+        "last_name": "Caldera",
+        "birth_date": "1990-10-25",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Shark.xlsx",
+        "age": 35
+      },
+      {
+        "team": "Sharks",
+        "number": "2",
+        "first_name": "Yasdiel",
+        "last_name": "Gomzalez",
+        "birth_date": "1986-05-24",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Shark.xlsx",
+        "age": 40
+      },
+      {
+        "team": "Sharks",
+        "number": "4",
+        "first_name": "Roidel",
+        "last_name": "Yero",
+        "birth_date": "1990-10-11",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Shark.xlsx",
+        "age": 35
+      },
+      {
+        "team": "Sharks",
+        "number": "5",
+        "first_name": "Elvis",
+        "last_name": "Suarez",
+        "birth_date": "1987-04-09",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Shark.xlsx",
+        "age": 39
+      },
+      {
+        "team": "Sharks",
+        "number": "6",
+        "first_name": "José",
+        "last_name": "Garcia",
+        "birth_date": "1991-02-08",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Shark.xlsx",
+        "age": 35
+      },
+      {
+        "team": "Sharks",
+        "number": "7",
+        "first_name": "Alex",
+        "last_name": "Luna",
+        "birth_date": "1985-12-31",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Shark.xlsx",
+        "age": 40
+      },
+      {
+        "team": "Sharks",
+        "number": "10",
+        "first_name": "Alexander",
+        "last_name": "Garriga",
+        "birth_date": "1989-08-21",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Shark.xlsx",
+        "age": 36
+      },
+      {
+        "team": "Sharks",
+        "number": "11",
+        "first_name": "Gerlin",
+        "last_name": "Oliveros",
+        "birth_date": "1989-02-23",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Shark.xlsx",
+        "age": 37
+      },
+      {
+        "team": "Sharks",
+        "number": "12",
+        "first_name": "Maikel",
+        "last_name": "Oliveros",
+        "birth_date": "1978-11-21",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Shark.xlsx",
+        "age": 47
+      },
+      {
+        "team": "Sharks",
+        "number": "13",
+        "first_name": "Rafael",
+        "last_name": "Noriega",
+        "birth_date": "1983-01-11",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Shark.xlsx",
+        "age": 43
+      },
+      {
+        "team": "Sharks",
+        "number": "14",
+        "first_name": "Osmel",
+        "last_name": "Rodriguez",
+        "birth_date": "1985-04-04",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Shark.xlsx",
+        "age": 41
+      },
+      {
+        "team": "Sharks",
+        "number": "15",
+        "first_name": "Angel",
+        "last_name": "Carvajal",
+        "birth_date": "1983-11-01",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Shark.xlsx",
+        "age": 42
+      },
+      {
+        "team": "Sharks",
+        "number": "16",
+        "first_name": "Yunier",
+        "last_name": "Ulloa",
+        "birth_date": "1987-05-01",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Shark.xlsx",
+        "age": 39
+      },
+      {
+        "team": "Caribeños",
+        "number": "5",
+        "first_name": "Eddy",
+        "last_name": "Korea",
+        "birth_date": "1977-07-07",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+        "age": 49
+      },
+      {
+        "team": "Caribeños",
+        "number": "6",
+        "first_name": "Jose",
+        "last_name": "Torres",
+        "birth_date": "1984-04-25",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+        "age": 42
+      },
+      {
+        "team": "Caribeños",
+        "number": "9",
+        "first_name": "Victor",
+        "last_name": "Vidal",
+        "birth_date": "1980-04-07",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+        "age": 46
+      },
+      {
+        "team": "Caribeños",
+        "number": "12",
+        "first_name": "Merly",
+        "last_name": "Primera",
+        "birth_date": "1976-09-16",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+        "age": 49
+      },
+      {
+        "team": "Caribeños",
+        "number": "13",
+        "first_name": "Ilmer",
+        "last_name": "Piña",
+        "birth_date": "1981-05-08",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+        "age": 45
+      },
+      {
+        "team": "Caribeños",
+        "number": "15",
+        "first_name": "Arnaldo Alejandro",
+        "last_name": "Santos",
+        "birth_date": "1978-07-14",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+        "age": 47
+      },
+      {
+        "team": "Cubs",
+        "number": "3",
+        "first_name": "Carlos",
+        "last_name": "Guerrero",
+        "birth_date": "1986-02-06",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Cubs.pdf",
+        "age": 40
+      },
+      {
+        "team": "Cubs",
+        "number": "5",
+        "first_name": "Erik",
+        "last_name": "Ravelo",
+        "birth_date": "1983-12-06",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Cubs.pdf",
+        "age": 42
+      },
+      {
+        "team": "Cubs",
+        "number": "16",
+        "first_name": "Carlos",
+        "last_name": "Medina",
+        "birth_date": "1977-05-15",
+        "position": "",
+        "source": "Roster_Oficial_LSL50_Cubs.pdf",
+        "age": 49
+      },
+      {
+        "team": "Bucaneros",
+        "number": "2",
+        "first_name": "Ender",
+        "last_name": "Davila",
+        "birth_date": "1980-07-08",
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": 46
+      },
+      {
+        "team": "Bucaneros",
+        "number": "9",
+        "first_name": "Jose",
+        "last_name": "Gonzalez",
+        "birth_date": "1985-05-15",
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": 41
+      },
+      {
+        "team": "Bucaneros",
+        "number": "12",
+        "first_name": "Roger",
+        "last_name": "Ramirez",
+        "birth_date": "1981-11-20",
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": 44
+      },
+      {
+        "team": "Bucaneros",
+        "number": "13",
+        "first_name": "Michael",
+        "last_name": "Gonzalez",
+        "birth_date": "1979-10-26",
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": 46
+      },
+      {
+        "team": "Bucaneros",
+        "number": "17",
+        "first_name": "Douglas",
+        "last_name": "Gonzalez",
+        "birth_date": "1979-09-23",
+        "position": "",
+        "source": "PHOTO-2026-01-29-10-45-34.jpg",
+        "age": 46
+      },
+      {
+        "team": "Hispanos",
+        "number": "23",
+        "first_name": "Carlos",
+        "last_name": "Soledispa",
+        "birth_date": "1980-02-23",
+        "position": "",
+        "source": "Roster Oficial Hispanos .jpg",
+        "age": 46
+      },
+      {
+        "team": "Hispanos",
+        "number": "11",
+        "first_name": "Ranier",
+        "last_name": "Cardenas",
+        "birth_date": "1980-10-10",
+        "position": "",
+        "source": "Roster Oficial Hispanos .jpg",
+        "age": 45
+      },
+      {
+        "team": "Hispanos",
+        "number": "1",
+        "first_name": "Rene",
+        "last_name": "Valdes",
+        "birth_date": "1983-09-18",
+        "position": "",
+        "source": "Roster Oficial Hispanos .jpg",
+        "age": 42
+      },
+      {
+        "team": "Hispanos",
+        "number": "3",
+        "first_name": "Rafael",
+        "last_name": "Munoz",
+        "birth_date": "1980-03-10",
+        "position": "",
+        "source": "Roster Oficial Hispanos .jpg",
+        "age": 46
+      },
+      {
+        "team": "Hispanos",
+        "number": "24",
+        "first_name": "Joel",
+        "last_name": "Alfaro",
+        "birth_date": "1977-05-19",
+        "position": "",
+        "source": "Roster Oficial Hispanos .jpg",
+        "age": 49
+      },
+      {
+        "team": "Hispanos",
+        "number": "16",
+        "first_name": "Avelo",
+        "last_name": "Banez",
+        "birth_date": "1978-01-11",
+        "position": "",
+        "source": "Roster Oficial Hispanos .jpg",
+        "age": 48
+      },
+      {
+        "team": "Hispanos",
+        "number": "7",
+        "first_name": "Yordin",
+        "last_name": "Rodriguez",
+        "birth_date": "1982-04-27",
+        "position": "",
+        "source": "Roster Oficial Hispanos .jpg",
+        "age": 44
+      }
+    ]
+  },
+  "players": [
+    {
+      "team": "Sharks",
+      "number": "1",
+      "first_name": "Pablo",
+      "last_name": "Caldera",
+      "birth_date": "1990-10-25",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 35
+    },
+    {
+      "team": "Sharks",
+      "number": "2",
+      "first_name": "Yasdiel",
+      "last_name": "Gomzalez",
+      "birth_date": "1986-05-24",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 40
+    },
+    {
+      "team": "Sharks",
+      "number": "3",
+      "first_name": "José",
+      "last_name": "Perez",
+      "birth_date": "1976-04-11",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 50
+    },
+    {
+      "team": "Sharks",
+      "number": "4",
+      "first_name": "Roidel",
+      "last_name": "Yero",
+      "birth_date": "1990-10-11",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 35
+    },
+    {
+      "team": "Sharks",
+      "number": "5",
+      "first_name": "Elvis",
+      "last_name": "Suarez",
+      "birth_date": "1987-04-09",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 39
+    },
+    {
+      "team": "Sharks",
+      "number": "6",
+      "first_name": "José",
+      "last_name": "Garcia",
+      "birth_date": "1991-02-08",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 35
+    },
+    {
+      "team": "Sharks",
+      "number": "7",
+      "first_name": "Alex",
+      "last_name": "Luna",
+      "birth_date": "1985-12-31",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 40
+    },
+    {
+      "team": "Sharks",
+      "number": "8",
+      "first_name": "Mario",
+      "last_name": "Gomez",
+      "birth_date": "1972-01-16",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 54
+    },
+    {
+      "team": "Sharks",
+      "number": "9",
+      "first_name": "Edson",
+      "last_name": "Lamus",
+      "birth_date": "1976-03-26",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 50
+    },
+    {
+      "team": "Sharks",
+      "number": "10",
+      "first_name": "Alexander",
+      "last_name": "Garriga",
+      "birth_date": "1989-08-21",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 36
+    },
+    {
+      "team": "Sharks",
+      "number": "11",
+      "first_name": "Gerlin",
+      "last_name": "Oliveros",
+      "birth_date": "1989-02-23",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 37
+    },
+    {
+      "team": "Sharks",
+      "number": "12",
+      "first_name": "Maikel",
+      "last_name": "Oliveros",
+      "birth_date": "1978-11-21",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 47
+    },
+    {
+      "team": "Sharks",
+      "number": "13",
+      "first_name": "Rafael",
+      "last_name": "Noriega",
+      "birth_date": "1983-01-11",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 43
+    },
+    {
+      "team": "Sharks",
+      "number": "14",
+      "first_name": "Osmel",
+      "last_name": "Rodriguez",
+      "birth_date": "1985-04-04",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 41
+    },
+    {
+      "team": "Sharks",
+      "number": "15",
+      "first_name": "Angel",
+      "last_name": "Carvajal",
+      "birth_date": "1983-11-01",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 42
+    },
+    {
+      "team": "Sharks",
+      "number": "16",
+      "first_name": "Yunier",
+      "last_name": "Ulloa",
+      "birth_date": "1987-05-01",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Shark.xlsx",
+      "age": 39
+    },
+    {
+      "team": "Caribeños",
+      "number": "1",
+      "first_name": "Jose",
+      "last_name": "Ramirez",
+      "birth_date": "1967-12-17",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 58
+    },
+    {
+      "team": "Caribeños",
+      "number": "2",
+      "first_name": "Loxner",
+      "last_name": "Silva",
+      "birth_date": "1972-04-13",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 54
+    },
+    {
+      "team": "Caribeños",
+      "number": "3",
+      "first_name": "Nauj",
+      "last_name": "Montes De Oca",
+      "birth_date": "1964-05-21",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 62
+    },
+    {
+      "team": "Caribeños",
+      "number": "4",
+      "first_name": "Allan",
+      "last_name": "Solano",
+      "birth_date": "1973-11-18",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 52
+    },
+    {
+      "team": "Caribeños",
+      "number": "5",
+      "first_name": "Eddy",
+      "last_name": "Korea",
+      "birth_date": "1977-07-07",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 49
+    },
+    {
+      "team": "Caribeños",
+      "number": "6",
+      "first_name": "Jose",
+      "last_name": "Torres",
+      "birth_date": "1984-04-25",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 42
+    },
+    {
+      "team": "Caribeños",
+      "number": "7",
+      "first_name": "Lenny",
+      "last_name": "Silva",
+      "birth_date": "1976-04-29",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 50
+    },
+    {
+      "team": "Caribeños",
+      "number": "8",
+      "first_name": "Degrain",
+      "last_name": "Marichales",
+      "birth_date": "1968-09-29",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 57
+    },
+    {
+      "team": "Caribeños",
+      "number": "9",
+      "first_name": "Victor",
+      "last_name": "Vidal",
+      "birth_date": "1980-04-07",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 46
+    },
+    {
+      "team": "Caribeños",
+      "number": "10",
+      "first_name": "Nolberto",
+      "last_name": "Gomez",
+      "birth_date": "1968-08-17",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 57
+    },
+    {
+      "team": "Caribeños",
+      "number": "11",
+      "first_name": "Cesar",
+      "last_name": "Leal",
+      "birth_date": "1964-05-01",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 62
+    },
+    {
+      "team": "Caribeños",
+      "number": "12",
+      "first_name": "Merly",
+      "last_name": "Primera",
+      "birth_date": "1976-09-16",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 49
+    },
+    {
+      "team": "Caribeños",
+      "number": "13",
+      "first_name": "Ilmer",
+      "last_name": "Piña",
+      "birth_date": "1981-05-08",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 45
+    },
+    {
+      "team": "Caribeños",
+      "number": "14",
+      "first_name": "Jose",
+      "last_name": "Rojas",
+      "birth_date": "1970-11-23",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 55
+    },
+    {
+      "team": "Caribeños",
+      "number": "15",
+      "first_name": "Arnaldo Alejandro",
+      "last_name": "Santos",
+      "birth_date": "1978-07-14",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 47
+    },
+    {
+      "team": "Caribeños",
+      "number": "16",
+      "first_name": "Fernando",
+      "last_name": "Sanchez",
+      "birth_date": "1974-06-12",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Caribeños ENERO 2026.xlsx",
+      "age": 52
+    },
+    {
+      "team": "Cubs",
+      "number": "1",
+      "first_name": "Caryl",
+      "last_name": "Serrano",
+      "birth_date": "1969-06-05",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 57
+    },
+    {
+      "team": "Cubs",
+      "number": "2",
+      "first_name": "Blas",
+      "last_name": "Ramirez",
+      "birth_date": "1962-06-07",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 64
+    },
+    {
+      "team": "Cubs",
+      "number": "3",
+      "first_name": "Carlos",
+      "last_name": "Guerrero",
+      "birth_date": "1986-02-06",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 40
+    },
+    {
+      "team": "Cubs",
+      "number": "4",
+      "first_name": "Carlos",
+      "last_name": "Lander",
+      "birth_date": "1966-02-14",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 60
+    },
+    {
+      "team": "Cubs",
+      "number": "5",
+      "first_name": "Erik",
+      "last_name": "Ravelo",
+      "birth_date": "1983-12-06",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 42
+    },
+    {
+      "team": "Cubs",
+      "number": "6",
+      "first_name": "Hernan",
+      "last_name": "Perez",
+      "birth_date": "1967-11-26",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 58
+    },
+    {
+      "team": "Cubs",
+      "number": "7",
+      "first_name": "Tito",
+      "last_name": "Chacin",
+      "birth_date": "1967-11-12",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 58
+    },
+    {
+      "team": "Cubs",
+      "number": "8",
+      "first_name": "Jesus",
+      "last_name": "Lopez",
+      "birth_date": "1970-01-23",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 56
+    },
+    {
+      "team": "Cubs",
+      "number": "9",
+      "first_name": "Nolberto",
+      "last_name": "Calderon",
+      "birth_date": "1972-09-30",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 53
+    },
+    {
+      "team": "Cubs",
+      "number": "10",
+      "first_name": "Oswaldo",
+      "last_name": "Lugo",
+      "birth_date": "1971-03-23",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 55
+    },
+    {
+      "team": "Cubs",
+      "number": "11",
+      "first_name": "Rafael",
+      "last_name": "Macho",
+      "birth_date": "1955-11-27",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 70
+    },
+    {
+      "team": "Cubs",
+      "number": "12",
+      "first_name": "Rafael",
+      "last_name": "Gonzalez",
+      "birth_date": "1974-12-22",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 51
+    },
+    {
+      "team": "Cubs",
+      "number": "13",
+      "first_name": "Gustavo",
+      "last_name": "Lacau",
+      "birth_date": "1965-02-25",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 61
+    },
+    {
+      "team": "Cubs",
+      "number": "14",
+      "first_name": "Rafael",
+      "last_name": "Moreno",
+      "birth_date": "1973-03-26",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 53
+    },
+    {
+      "team": "Cubs",
+      "number": "15",
+      "first_name": "Miguel",
+      "last_name": "Ochoa",
+      "birth_date": "1972-02-09",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 54
+    },
+    {
+      "team": "Cubs",
+      "number": "16",
+      "first_name": "Carlos",
+      "last_name": "Medina",
+      "birth_date": "1977-05-15",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 49
+    },
+    {
+      "team": "Cubs",
+      "number": "17",
+      "first_name": "Leonardo",
+      "last_name": "Reano",
+      "birth_date": "1971-04-21",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 55
+    },
+    {
+      "team": "Cubs",
+      "number": "18",
+      "first_name": "Carlos",
+      "last_name": "Decena",
+      "birth_date": "1970-12-29",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 55
+    },
+    {
+      "team": "Cubs",
+      "number": "19",
+      "first_name": "Cesar",
+      "last_name": "Mendez",
+      "birth_date": "1973-12-02",
+      "position": "",
+      "source": "Roster_Oficial_LSL50_Cubs.pdf",
+      "age": 52
+    },
+    {
+      "team": "Bucaneros",
+      "number": "1",
+      "first_name": "Isaac",
+      "last_name": "Carciente",
+      "birth_date": "1975-09-15",
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": 50
+    },
+    {
+      "team": "Bucaneros",
+      "number": "2",
+      "first_name": "Ender",
+      "last_name": "Davila",
+      "birth_date": "1980-07-08",
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": 46
+    },
+    {
+      "team": "Bucaneros",
+      "number": "3",
+      "first_name": "Carlos",
+      "last_name": "Paez",
+      "birth_date": null,
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": null
+    },
+    {
+      "team": "Bucaneros",
+      "number": "4",
+      "first_name": "Angel",
+      "last_name": "Martinez",
+      "birth_date": null,
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": null
+    },
+    {
+      "team": "Bucaneros",
+      "number": "5",
+      "first_name": "Lionel",
+      "last_name": "Martinez",
+      "birth_date": null,
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": null
+    },
+    {
+      "team": "Bucaneros",
+      "number": "6",
+      "first_name": "Jose",
+      "last_name": "Sojo",
+      "birth_date": null,
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": null
+    },
+    {
+      "team": "Bucaneros",
+      "number": "7",
+      "first_name": "Freddy",
+      "last_name": "Alayon",
+      "birth_date": null,
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": null
+    },
+    {
+      "team": "Bucaneros",
+      "number": "8",
+      "first_name": "Dennis",
+      "last_name": "Quillarque",
+      "birth_date": null,
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": null
+    },
+    {
+      "team": "Bucaneros",
+      "number": "9",
+      "first_name": "Jose",
+      "last_name": "Gonzalez",
+      "birth_date": "1985-05-15",
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": 41
+    },
+    {
+      "team": "Bucaneros",
+      "number": "10",
+      "first_name": "Alfonso",
+      "last_name": "Davila",
+      "birth_date": null,
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": null
+    },
+    {
+      "team": "Bucaneros",
+      "number": "11",
+      "first_name": "Gene",
+      "last_name": "Brandt",
+      "birth_date": null,
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": null
+    },
+    {
+      "team": "Bucaneros",
+      "number": "12",
+      "first_name": "Roger",
+      "last_name": "Ramirez",
+      "birth_date": "1981-11-20",
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": 44
+    },
+    {
+      "team": "Bucaneros",
+      "number": "13",
+      "first_name": "Michael",
+      "last_name": "Gonzalez",
+      "birth_date": "1979-10-26",
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": 46
+    },
+    {
+      "team": "Bucaneros",
+      "number": "14",
+      "first_name": "Kelwin",
+      "last_name": "Aristigueta",
+      "birth_date": null,
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": null
+    },
+    {
+      "team": "Bucaneros",
+      "number": "15",
+      "first_name": "Hugo",
+      "last_name": "Ortega",
+      "birth_date": null,
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": null
+    },
+    {
+      "team": "Bucaneros",
+      "number": "16",
+      "first_name": "Rafael",
+      "last_name": "Gimenez",
+      "birth_date": null,
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": null
+    },
+    {
+      "team": "Bucaneros",
+      "number": "17",
+      "first_name": "Douglas",
+      "last_name": "Gonzalez",
+      "birth_date": "1979-09-23",
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": 46
+    },
+    {
+      "team": "Bucaneros",
+      "number": "18",
+      "first_name": "Atahualpa",
+      "last_name": "Soteldo",
+      "birth_date": null,
+      "position": "",
+      "source": "PHOTO-2026-01-29-10-45-34.jpg",
+      "age": null
+    },
+    {
+      "team": "Hispanos",
+      "number": "51",
+      "first_name": "Orlando",
+      "last_name": "Hernandez",
+      "birth_date": "1968-05-12",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 58
+    },
+    {
+      "team": "Hispanos",
+      "number": "21",
+      "first_name": "Victor",
+      "last_name": "Rymer",
+      "birth_date": "1961-02-17",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 65
+    },
+    {
+      "team": "Hispanos",
+      "number": "13",
+      "first_name": "Jose",
+      "last_name": "Reyes",
+      "birth_date": "1961-09-13",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 64
+    },
+    {
+      "team": "Hispanos",
+      "number": "23",
+      "first_name": "Carlos",
+      "last_name": "Soledispa",
+      "birth_date": "1980-02-23",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 46
+    },
+    {
+      "team": "Hispanos",
+      "number": "11",
+      "first_name": "Ranier",
+      "last_name": "Cardenas",
+      "birth_date": "1980-10-10",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 45
+    },
+    {
+      "team": "Hispanos",
+      "number": "35",
+      "first_name": "Nestor",
+      "last_name": "Matheus",
+      "birth_date": "1968-09-09",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 57
+    },
+    {
+      "team": "Hispanos",
+      "number": "10",
+      "first_name": "Eduard",
+      "last_name": "Peralta",
+      "birth_date": "1968-07-10",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 57
+    },
+    {
+      "team": "Hispanos",
+      "number": "69",
+      "first_name": "Lenin",
+      "last_name": "Palacios",
+      "birth_date": "1969-01-05",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 57
+    },
+    {
+      "team": "Hispanos",
+      "number": "1",
+      "first_name": "Rene",
+      "last_name": "Valdes",
+      "birth_date": "1983-09-18",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 42
+    },
+    {
+      "team": "Hispanos",
+      "number": "25",
+      "first_name": "Brian",
+      "last_name": "Field",
+      "birth_date": "1972-09-23",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 53
+    },
+    {
+      "team": "Hispanos",
+      "number": "3",
+      "first_name": "Rafael",
+      "last_name": "Munoz",
+      "birth_date": "1980-03-10",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 46
+    },
+    {
+      "team": "Hispanos",
+      "number": "30",
+      "first_name": "Alex",
+      "last_name": "Almeida",
+      "birth_date": "1974-02-09",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 52
+    },
+    {
+      "team": "Hispanos",
+      "number": "24",
+      "first_name": "Joel",
+      "last_name": "Alfaro",
+      "birth_date": "1977-05-19",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 49
+    },
+    {
+      "team": "Hispanos",
+      "number": "4",
+      "first_name": "David",
+      "last_name": "Batista",
+      "birth_date": "1969-08-05",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 56
+    },
+    {
+      "team": "Hispanos",
+      "number": "23",
+      "first_name": "Kelvin",
+      "last_name": "Joga",
+      "birth_date": "1974-02-23",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 52
+    },
+    {
+      "team": "Hispanos",
+      "number": "16",
+      "first_name": "Avelo",
+      "last_name": "Banez",
+      "birth_date": "1978-01-11",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 48
+    },
+    {
+      "team": "Hispanos",
+      "number": "12",
+      "first_name": "Osmanis",
+      "last_name": "Verdecia",
+      "birth_date": "1975-01-16",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 51
+    },
+    {
+      "team": "Hispanos",
+      "number": "7",
+      "first_name": "Yordin",
+      "last_name": "Rodriguez",
+      "birth_date": "1982-04-27",
+      "position": "",
+      "source": "Roster Oficial Hispanos .jpg",
+      "age": 44
+    }
+  ]
+}

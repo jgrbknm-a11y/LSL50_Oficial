@@ -1,0 +1,60 @@
+LSL50 LIVE CONTROL CENTER V1 REAL
+
+Esto sí es un sistema local funcional para probar en la MacBook.
+
+ARCHIVOS:
+- START_LSL50_CONTROL_CENTER_MAC.command
+  Abre el sistema local.
+
+- server.py
+  Servidor local. No necesitas internet para que funcione el panel y el overlay.
+
+- control.html
+  Panel privado para controlar el juego.
+
+- overlay.html
+  Fuente real para OBS.
+
+- data/state.json
+  Datos del juego que se actualizan en vivo.
+
+CÓMO USARLO EN MAC:
+1. Descomprime este ZIP.
+2. Doble clic en START_LSL50_CONTROL_CENTER_MAC.command.
+3. Se abre el panel de control en el navegador.
+4. Deja la ventana de Terminal abierta.
+
+FUENTE REAL PARA OBS:
+En OBS agrega:
+Fuentes > + > Navegador
+
+URL:
+http://127.0.0.1:5050/overlay.html
+
+Ancho:
+1280
+
+Alto:
+720
+
+Orden:
+- LSL50 Overlay arriba
+- OBSBOT Tail Air abajo
+
+CÓMO SE ACTUALIZA:
+1. Manual: cambias datos en el panel y pulsas ACTUALIZAR EN VIVO.
+2. Desde el cuaderno digital: TRAER CUADERNO (una vez) o AUTO CUADERNO
+   (cada 2s lee http://127.0.0.1:8080/api/live-game-state.php).
+3. OBS actualiza la gráfica automáticamente desde /api/state.
+
+REQUISITO PARA SYNC DEL CUADERNO:
+El sitio LSL50 debe estar en el puerto 8080:
+  php -S 127.0.0.1:8080 -t LSL50_Website_System LSL50_Website_System/router.php
+
+NOTA:
+Esta es V1 funcional. La próxima fase debe mejorar:
+- fotos reales de jugadores
+- logos reales por equipo
+- diseño visual premium igual a la maqueta aprobada
+- botones rápidos para operador
+- half-inning visual (▲/▼) en el overlay OBS

@@ -1,0 +1,16 @@
+<?php
+
+namespace Database\Seeders;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class SeasonsSeeder extends Seeder
+{
+    public function run(): void
+    {
+        DB::table('seasons')->insertOrIgnore([
+            ['id'=>1,'league_id'=>1,'name'=>'Temporada 2025','year'=>2025],
+        ]);
+    }
+}

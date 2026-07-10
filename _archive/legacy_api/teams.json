@@ -1,0 +1,72 @@
+{
+  "status": "ok",
+  "updated_at": "2025-10-20T21:59:21.379073Z",
+  "count": 5,
+  "data": [
+    {
+      "id": "team_caribenos",
+      "slug": "caribenos",
+      "name": "Caribeños Softball Club",
+      "abbr": "CAR",
+      "colors": {
+        "primary": "#0033A0",
+        "secondary": "#FFD600",
+        "accent": "#E31837"
+      },
+      "logo": "/mnt/data/assets/logos/teams/caribenos/logo_pelota_arriba.png",
+      "status": "active"
+    },
+    {
+      "id": "team_leones",
+      "slug": "leones",
+      "name": "Leones",
+      "abbr": "LEO",
+      "colors": {
+        "primary": "#0B3D91",
+        "secondary": "#FFD700",
+        "accent": "#C8102E"
+      },
+      "logo": "/assets/logos/teams/leones/logo.png",
+      "status": "active"
+    },
+    {
+      "id": "team_tigres",
+      "slug": "tigres",
+      "name": "Tigres",
+      "abbr": "TIG",
+      "colors": {
+        "primary": "#002D62",
+        "secondary": "#F5A623",
+        "accent": "#D0021B"
+      },
+      "logo": "/assets/logos/teams/tigres/logo.png",
+      "status": "active"
+    },
+    {
+      "id": "team_huracanes",
+      "slug": "huracanes",
+      "name": "Huracanes",
+      "abbr": "HUR",
+      "colors": {
+        "primary": "#003E51",
+        "secondary": "#00AEEF",
+        "accent": "#FF6A00"
+      },
+      "logo": "/assets/logos/teams/huracanes/logo.png",
+      "status": "active"
+    },
+    {
+      "id": "team_piratas",
+      "slug": "piratas",
+      "name": "Piratas",
+      "abbr": "PIR",
+      "colors": {
+        "primary": "#1C1C1C",
+        "secondary": "#C0A062",
+        "accent": "#A51C30"
+      },
+      "logo": "/assets/logos/teams/piratas/logo.png",
+      "status": "active"
+    }
+  ]
+}

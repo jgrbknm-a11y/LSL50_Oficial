@@ -1,0 +1,49 @@
+# Secrets / local env (project root and under Website_System)
+.env
+.env.*
+!.env.example
+LSL50_Website_System/.env
+LSL50_Website_System/data/.env
+*.pem
+*.key
+
+# SQLite runtime / backups (keep schema via code; DB is local working data)
+LSL50_Website_System/data/*.sqlite
+LSL50_Website_System/data/*.sqlite-*
+LSL50_Website_System/data/*.db
+!LSL50_Website_System/data/.gitkeep
+
+# Generated PDFs and temp output
+LSL50_Website_System/output/pdf/*.pdf
+tmp/
+*.tmp
+
+# Uploads (binary user content)
+LSL50_Website_System/public/uploads/**
+!LSL50_Website_System/public/uploads/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+.Python
+.venv/
+venv/
+
+# Composer / Node caches (if reintroduced later)
+vendor/
+node_modules/
+.composer/
+.composer_tmp/
+LSL50_Website_System/.composer/
+LSL50_Website_System/.composer_tmp/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Cursor local canvases sidecar (optional machine state)
+*.canvas.data.json

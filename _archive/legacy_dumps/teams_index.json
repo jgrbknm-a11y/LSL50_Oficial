@@ -1,0 +1,76 @@
+{
+  "updated_at": "2025-10-20T21:59:21.379073Z",
+  "league": "Legends Softball League +50",
+  "teams": [
+    {
+      "id": "team_caribenos",
+      "slug": "caribenos",
+      "name": "Caribeños Softball Club",
+      "abbr": "CAR",
+      "json_path": "/mnt/data/team_caribenos.json",
+      "logo_primary": "/mnt/data/assets/logos/teams/caribenos/logo_pelota_arriba.png",
+      "colors": {
+        "primary": "#0033A0",
+        "secondary": "#FFD600",
+        "accent": "#E31837"
+      },
+      "status": "active"
+    },
+    {
+      "id": "team_leones",
+      "slug": "leones",
+      "name": "Leones",
+      "abbr": "LEO",
+      "json_path": "/mnt/data/teams/leones.json",
+      "logo_primary": "/assets/logos/teams/leones/logo.png",
+      "colors": {
+        "primary": "#0B3D91",
+        "secondary": "#FFD700",
+        "accent": "#C8102E"
+      },
+      "status": "active"
+    },
+    {
+      "id": "team_tigres",
+      "slug": "tigres",
+      "name": "Tigres",
+      "abbr": "TIG",
+      "json_path": "/mnt/data/teams/tigres.json",
+      "logo_primary": "/assets/logos/teams/tigres/logo.png",
+      "colors": {
+        "primary": "#002D62",
+        "secondary": "#F5A623",
+        "accent": "#D0021B"
+      },
+      "status": "active"
+    },
+    {
+      "id": "team_huracanes",
+      "slug": "huracanes",
+      "name": "Huracanes",
+      "abbr": "HUR",
+      "json_path": "/mnt/data/teams/huracanes.json",
+      "logo_primary": "/assets/logos/teams/huracanes/logo.png",
+      "colors": {
+        "primary": "#003E51",
+        "secondary": "#00AEEF",
+        "accent": "#FF6A00"
+      },
+      "status": "active"
+    },
+    {
+      "id": "team_piratas",
+      "slug": "piratas",
+      "name": "Piratas",
+      "abbr": "PIR",
+      "json_path": "/mnt/data/teams/piratas.json",
+      "logo_primary": "/assets/logos/teams/piratas/logo.png",
+      "colors": {
+        "primary": "#1C1C1C",
+        "secondary": "#C0A062",
+        "accent": "#A51C30"
+      },
+      "status": "active"
+    }
+  ]
+}

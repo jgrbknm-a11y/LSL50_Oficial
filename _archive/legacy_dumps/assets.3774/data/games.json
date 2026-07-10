@@ -1,0 +1,13 @@
+{
+  "name": "games",
+  "data": [
+    {
+      "game_id": "G-001",
+      "status": "scheduled",
+      "home": "L50-001",
+      "away": "L50-002",
+      "innings": [],
+      "final": null
+    }
+  ]
+}

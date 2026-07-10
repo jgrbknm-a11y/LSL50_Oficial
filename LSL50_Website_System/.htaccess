@@ -1,0 +1,18 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
+</IfModule>
+
+# Bloquear .env y otros sensibles (muy importante hoy)
+<FilesMatch "^(\.env|\.env\..*|composer\.(json|lock)|artisan|\.git|\.gitignore|readme\.md|README\.md)$">
+  Require all denied
+</FilesMatch>
+
+# Bloquear data/ (SQLite, .env local, backups)
+<IfModule mod_authz_core.c>
+  <DirectoryMatch "(^|/)data(/|$)">
+    Require all denied
+  </DirectoryMatch>
+</IfModule>

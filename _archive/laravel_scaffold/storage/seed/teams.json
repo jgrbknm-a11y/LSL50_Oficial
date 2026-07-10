@@ -1,0 +1,225 @@
+{
+  "teams": [
+    {
+      "id": "team_caribenos",
+      "slug": "caribenos",
+      "team_name": "Caribeños Softball Club",
+      "team_name_short": "Caribeños",
+      "team_abbr": "CAR",
+      "league": "Legends Softball League +50",
+      "status": "active",
+      "founded_year": 2025,
+      "home_city": "Broward County, FL",
+      "branding": {
+        "primary_color": "#0033A0",
+        "secondary_color": "#FFD600",
+        "accent_color": "#E31837",
+        "logo": {
+          "primary": "/assets/logos/teams/caribenos/logo_pelota_arriba.png",
+          "alternate": "/assets/logos/teams/caribenos/logo_pelota_abajo.png",
+          "monochrome": "/assets/logos/teams/caribenos/logo_monocromo.png"
+        }
+      },
+      "uniforms": {
+        "home": {
+          "jersey_color": "#0033A0",
+          "numbers_color": "#FFD600",
+          "trim_color": "#E31837"
+        },
+        "away": {
+          "jersey_color": "#FFFFFF",
+          "numbers_color": "#0033A0",
+          "trim_color": "#E31837"
+        }
+      },
+      "meta": {
+        "created_at": "2025-10-20T21:55:58.281235Z",
+        "created_by": "system:chatgpt",
+        "version": 1
+      },
+      "descriptions": {
+        "es": "Los Caribeños representan el espíritu cálido, alegre y competitivo del Caribe. Un equipo que combina pasión, técnica y camaradería en cada juego.",
+        "en": "Caribeños embody the warm, joyful and competitive spirit of the Caribbean, bringing passion, skill and camaraderie to every game."
+      },
+      "contacts": {
+        "manager_name": "",
+        "manager_email": "",
+        "manager_phone": ""
+      },
+      "social": {
+        "instagram": "",
+        "facebook": "",
+        "x": ""
+      },
+      "roster": [],
+      "staff": [],
+      "season_data": {
+        "current_season": 2025,
+        "stats_seed": {
+          "games_played": 0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 0,
+          "runs_scored": 0,
+          "runs_allowed": 0
+        }
+      }
+    },
+    {
+      "id": "team_leones",
+      "slug": "leones",
+      "team_name": "Leones",
+      "team_name_short": "Leones",
+      "team_abbr": "LEO",
+      "league": "Legends Softball League +50",
+      "status": "active",
+      "founded_year": 2025,
+      "home_city": "Broward County, FL",
+      "branding": {
+        "primary_color": "#0B3D91",
+        "secondary_color": "#FFD700",
+        "accent_color": "#C8102E",
+        "logo": {
+          "primary": "/assets/logos/teams/leones/logo.png"
+        }
+      },
+      "uniforms": {},
+      "descriptions": {
+        "es": "Leones forma parte de la LSL+50.",
+        "en": "Leones is part of LSL+50."
+      },
+      "contacts": {},
+      "social": {},
+      "season_data": {
+        "current_season": 2025,
+        "stats_seed": {
+          "games_played": 0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 0,
+          "runs_scored": 0,
+          "runs_allowed": 0
+        }
+      },
+      "roster": [],
+      "staff": []
+    },
+    {
+      "id": "team_tigres",
+      "slug": "tigres",
+      "team_name": "Tigres",
+      "team_name_short": "Tigres",
+      "team_abbr": "TIG",
+      "league": "Legends Softball League +50",
+      "status": "active",
+      "founded_year": 2025,
+      "home_city": "Broward County, FL",
+      "branding": {
+        "primary_color": "#002D62",
+        "secondary_color": "#F5A623",
+        "accent_color": "#D0021B",
+        "logo": {
+          "primary": "/assets/logos/teams/tigres/logo.png"
+        }
+      },
+      "uniforms": {},
+      "descriptions": {
+        "es": "Tigres forma parte de la LSL+50.",
+        "en": "Tigres is part of LSL+50."
+      },
+      "contacts": {},
+      "social": {},
+      "season_data": {
+        "current_season": 2025,
+        "stats_seed": {
+          "games_played": 0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 0,
+          "runs_scored": 0,
+          "runs_allowed": 0
+        }
+      },
+      "roster": [],
+      "staff": []
+    },
+    {
+      "id": "team_huracanes",
+      "slug": "huracanes",
+      "team_name": "Huracanes",
+      "team_name_short": "Huracanes",
+      "team_abbr": "HUR",
+      "league": "Legends Softball League +50",
+      "status": "active",
+      "founded_year": 2025,
+      "home_city": "Broward County, FL",
+      "branding": {
+        "primary_color": "#003E51",
+        "secondary_color": "#00AEEF",
+        "accent_color": "#FF6A00",
+        "logo": {
+          "primary": "/assets/logos/teams/huracanes/logo.png"
+        }
+      },
+      "uniforms": {},
+      "descriptions": {
+        "es": "Huracanes forma parte de la LSL+50.",
+        "en": "Huracanes is part of LSL+50."
+      },
+      "contacts": {},
+      "social": {},
+      "season_data": {
+        "current_season": 2025,
+        "stats_seed": {
+          "games_played": 0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 0,
+          "runs_scored": 0,
+          "runs_allowed": 0
+        }
+      },
+      "roster": [],
+      "staff": []
+    },
+    {
+      "id": "team_piratas",
+      "slug": "piratas",
+      "team_name": "Piratas",
+      "team_name_short": "Piratas",
+      "team_abbr": "PIR",
+      "league": "Legends Softball League +50",
+      "status": "active",
+      "founded_year": 2025,
+      "home_city": "Broward County, FL",
+      "branding": {
+        "primary_color": "#1C1C1C",
+        "secondary_color": "#C0A062",
+        "accent_color": "#A51C30",
+        "logo": {
+          "primary": "/assets/logos/teams/piratas/logo.png"
+        }
+      },
+      "uniforms": {},
+      "descriptions": {
+        "es": "Piratas forma parte de la LSL+50.",
+        "en": "Piratas is part of LSL+50."
+      },
+      "contacts": {},
+      "social": {},
+      "season_data": {
+        "current_season": 2025,
+        "stats_seed": {
+          "games_played": 0,
+          "wins": 0,
+          "losses": 0,
+          "ties": 0,
+          "runs_scored": 0,
+          "runs_allowed": 0
+        }
+      },
+      "roster": [],
+      "staff": []
+    }
+  ]
+}

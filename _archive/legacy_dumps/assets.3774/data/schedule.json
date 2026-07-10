@@ -1,0 +1,13 @@
+{
+  "name": "schedule",
+  "data": [
+    {
+      "game_id": "G-001",
+      "date": "2025-10-20",
+      "time": "09:00",
+      "field": "Central Park 1",
+      "home": "L50-001",
+      "away": "L50-002"
+    }
+  ]
+}

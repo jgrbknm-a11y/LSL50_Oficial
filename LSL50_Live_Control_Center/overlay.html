@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>LSL50 Overlay OBS</title>
+<style>
+:root{--navy:#061b3b;--navy2:#082f62;--dark:#060b12;--gold:#e9bb45;--red:#e51e2f;--white:#f7fbff;--silver:#dce2ea}
+*{box-sizing:border-box}
+html,body{margin:0;width:1280px;height:720px;overflow:hidden;background:transparent;font-family:Arial,Helvetica,sans-serif;color:var(--white)}
+body{position:relative;text-rendering:geometricPrecision;-webkit-font-smoothing:antialiased}
+.shadow{filter:drop-shadow(0 7px 13px rgba(0,0,0,.7))}
+.liveBug{position:absolute;left:18px;top:18px;width:258px;height:72px;color:white}
+.liveBug .lsl{display:inline-block;font-size:42px;font-weight:900;letter-spacing:-1px;font-style:italic}
+.liveBug .live{display:inline-block;margin-left:8px;background:var(--red);padding:5px 13px;border-radius:4px;font-size:26px;font-weight:900;font-style:italic;vertical-align:7px}
+.liveBug .sub{margin-top:-4px;font-size:11px;font-weight:900;letter-spacing:.7px}
+.scorebar{position:absolute;left:252px;top:18px;width:1000px;height:76px;border:2px solid var(--gold);border-radius:8px;overflow:hidden;background:linear-gradient(180deg,#101821,#04080d);display:grid;grid-template-columns:95px 185px 62px 90px 230px 62px 82px 170px 122px}
+.scorebar>div{display:flex;align-items:center;justify-content:center;border-right:1px solid rgba(255,255,255,.22)}
+.scorebar>div:last-child{border-right:none}
+.logoCell,.teamCell{background:linear-gradient(135deg,#082f62,#061b3b)}
+.teamCell{justify-content:flex-start!important;padding-left:16px;font-size:29px;font-weight:900;text-transform:uppercase}
+.scoreCell{background:linear-gradient(180deg,#fff,#d7dce4);color:#061b3b;font-size:45px;font-weight:900}
+.inningCell{background:#101216;color:var(--gold);font-size:25px;font-weight:900;flex-direction:column}
+.tri{width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-top:11px solid var(--gold);margin-top:3px}
+.countCell{background:#101216;font-size:24px;font-weight:900;gap:10px}
+.countCell .num{color:var(--gold)}
+.teamMark{width:62px;height:48px;border:3px solid var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900;color:var(--gold);background:linear-gradient(135deg,#082f62,#061b3b)}
+.bases{position:relative;width:86px;height:58px}
+.base{position:absolute;width:22px;height:22px;transform:rotate(45deg);border:2px solid var(--silver);background:transparent}
+.base.on{background:var(--gold);border-color:var(--gold)}
+.b2{left:32px;top:0}.b1{right:0;top:25px}.b3{left:0;top:25px}.bh{left:32px;bottom:0}
+.card{position:absolute;bottom:105px;width:405px;height:125px;background:linear-gradient(135deg,rgba(5,24,54,.97),rgba(8,47,98,.94));border:2px solid var(--gold);border-radius:9px;overflow:hidden}
+.batterCard{left:26px}.pitcherCard{right:26px}
+.photo{position:absolute;top:12px;width:104px;height:104px;border-radius:9px;background:linear-gradient(135deg,#17263c,#0d366f);border:1px solid rgba(255,255,255,.35);overflow:hidden}
+.batterCard .photo{left:13px}.pitcherCard .photo{right:13px}
+.placeholder{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:900;color:rgba(255,255,255,.82)}
+.batterText{position:absolute;left:137px;top:18px}
+.pitcherText{position:absolute;left:24px;top:18px}
+.label{color:var(--gold);font-size:16px;font-weight:900;font-style:italic;text-transform:uppercase}
+.bigNum{font-size:43px;font-weight:900;color:var(--gold);line-height:38px}
+.name{font-size:35px;font-weight:900;line-height:35px;text-transform:uppercase}
+.smallFirst{font-size:24px;font-weight:900;line-height:24px;text-transform:uppercase}
+.goldLine{height:2px;background:var(--gold);margin:9px 0;width:255px}
+.stats{font-size:17px;font-weight:900;white-space:nowrap}
+.ticker{position:absolute;left:0;bottom:0;width:1280px;height:82px;background:linear-gradient(90deg,rgba(5,24,54,.98),rgba(7,43,87,.96),rgba(5,24,54,.98));border-top:4px solid var(--gold)}
+.shield{position:absolute;left:42px;top:-24px;width:115px;height:102px;background:linear-gradient(180deg,#0a376e,#061b3b);border:2px solid var(--gold);clip-path:polygon(10% 0,90% 0,90% 70%,50% 100%,10% 70%);display:flex;align-items:center;flex-direction:column;padding-top:11px}
+.shield .s1{font-size:31px;font-weight:900}.shield .s2{font-size:14px;font-weight:900}.shield .s3{font-size:14px;font-weight:900;color:var(--gold)}
+.divider{position:absolute;left:190px;top:19px;width:2px;height:48px;background:var(--gold)}
+.tickerText{position:absolute;left:255px;top:27px;font-size:23px;font-weight:900;text-transform:uppercase}
+.tickerText .gold{color:var(--gold)}.tickerText .dot{color:var(--red);padding:0 18px}
+</style>
+</head>
+<body>
+<div class="liveBug shadow"><div><span class="lsl">LSL50</span><span class="live">LIVE</span></div><div class="sub">LEGENDS SOFTBALL LEAGUE 50 PLUS</div></div>
+<div class="scorebar shadow">
+<div class="logoCell"><div class="teamMark" id="visitorLogo">BUC</div></div><div class="teamCell" id="visitorTeam">BUCANEROS</div><div class="scoreCell" id="visitorScore">3</div>
+<div class="logoCell"><div class="teamMark" id="homeLogo">CAR</div></div><div class="teamCell" id="homeTeam">CARIBEÑOS</div><div class="scoreCell" id="homeScore">2</div>
+<div class="inningCell"><div id="inning">4TO</div><div class="tri"></div></div>
+<div class="countCell"><span>B</span><span class="num" id="balls">2</span><span>S</span><span class="num" id="strikes">1</span><span>O</span><span class="num" id="outs">1</span></div>
+<div><div class="bases"><div class="base b2" id="base2"></div><div class="base b1" id="base1"></div><div class="base b3" id="base3"></div><div class="base bh"></div></div></div>
+</div>
+<div class="card batterCard shadow"><div class="photo"><div class="placeholder" id="batterPH">27</div></div><div class="batterText"><div class="bigNum" id="batterNumber">27</div><div class="smallFirst" id="batterFirst">JOSÉ</div><div class="name" id="batterLast">RAMÍREZ</div><div class="goldLine"></div><div class="stats" id="batterStats">AVG .412 | HR 3 | RBI 14</div></div></div>
+<div class="card pitcherCard shadow"><div class="pitcherText"><div class="label">PITCHER:</div><div class="smallFirst" id="pitcherFirst">CARLOS</div><div class="name" id="pitcherLast">PÉREZ</div><div class="goldLine"></div><div class="stats" id="pitcherStats">IP 3.0 | K 4 | BB 1 | ER 2</div></div><div class="photo"><div class="placeholder" id="pitcherPH">C</div></div></div>
+<div class="ticker"><div class="shield"><div class="s1">LSL50</div><div class="s2">LEGENDS</div><div class="s3">50+</div></div><div class="divider"></div><div class="tickerText"><span class="gold">Próximo juego:</span> <span id="nextGame">Cubs vs Bucaneros</span><span class="dot">•</span><span id="nextTime">11:30 AM</span><span class="dot">•</span><span id="web">legendssoftball50.com</span></div></div>
+<script>
+async function getState(){const r=await fetch('/api/state?ts='+Date.now());return await r.json();}
+function splitName(n){const p=(n||"").trim().split(/\s+/);return p.length<=1?[n||"",""]:[p[0],p.slice(1).join(" ")];}
+const teams={Bucaneros:{abbr:"BUC",primary:"#111111",accent:"#e9bb45"},Caribeños:{abbr:"CAR",primary:"#0033a0",accent:"#ffd600"},Cerveceros:{abbr:"CER",primary:"#7a1f2b",accent:"#f0bd42"},Cubs:{abbr:"CUB",primary:"#0e4f9f",accent:"#d71920"},Hispanos:{abbr:"HIS",primary:"#0a5c3b",accent:"#f2c14e"},Sharks:{abbr:"SHK",primary:"#007c89",accent:"#d7f7ff"}};
+function paintMark(el,team){const t=teams[team]||{abbr:(team||"LSL").slice(0,3).toUpperCase(),primary:"#082f62",accent:"#e9bb45"};el.textContent=t.abbr;el.style.background=`linear-gradient(135deg,${t.primary},#061b3b)`;el.style.color=t.accent;el.style.borderColor=t.accent;}
+async function render(){
+ try{
+  const d=await getState();
+  visitorTeam.textContent=(d.visitorTeam||"").toUpperCase(); homeTeam.textContent=(d.homeTeam||"").toUpperCase();
+  paintMark(visitorLogo,d.visitorTeam); paintMark(homeLogo,d.homeTeam);
+  visitorScore.textContent=d.visitorScore; homeScore.textContent=d.homeScore; inning.textContent=d.inning;
+  balls.textContent=d.balls; strikes.textContent=d.strikes; outs.textContent=d.outs;
+  base1.classList.toggle("on",!!d.bases.first); base2.classList.toggle("on",!!d.bases.second); base3.classList.toggle("on",!!d.bases.third);
+  batterNumber.textContent=d.batter.number; batterPH.textContent=d.batter.number;
+  let [bf,bl]=splitName(d.batter.name); batterFirst.textContent=bf.toUpperCase(); batterLast.textContent=bl.toUpperCase();
+  batterStats.textContent=`AVG ${d.batter.avg} | HR ${d.batter.hr} | RBI ${d.batter.rbi}`;
+  let [pf,pl]=splitName(d.pitcher.name); pitcherFirst.textContent=pf.toUpperCase(); pitcherLast.textContent=pl.toUpperCase();
+  pitcherStats.textContent=`IP ${d.pitcher.ip} | K ${d.pitcher.k} | BB ${d.pitcher.bb} | ER ${d.pitcher.er}`;
+  nextGame.textContent=d.ticker.nextGame; nextTime.textContent=d.ticker.time; web.textContent=d.ticker.web;
+ }catch(e){}
+}
+setInterval(render,500); render();
+</script>
+</body>
+</html>

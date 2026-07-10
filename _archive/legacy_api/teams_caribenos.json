@@ -1,0 +1,69 @@
+{
+  "status": "ok",
+  "updated_at": "2025-10-20T21:59:21.379073Z",
+  "data": {
+    "id": "team_caribenos",
+    "slug": "caribenos",
+    "team_name": "Caribeños Softball Club",
+    "team_name_short": "Caribeños",
+    "team_abbr": "CAR",
+    "league": "Legends Softball League +50",
+    "status": "active",
+    "founded_year": 2025,
+    "home_city": "Broward County, FL",
+    "branding": {
+      "primary_color": "#0033A0",
+      "secondary_color": "#FFD600",
+      "accent_color": "#E31837",
+      "logo": {
+        "primary": "/assets/logos/teams/caribenos/logo_pelota_arriba.png",
+        "alternate": "/assets/logos/teams/caribenos/logo_pelota_abajo.png",
+        "monochrome": "/assets/logos/teams/caribenos/logo_monocromo.png"
+      }
+    },
+    "uniforms": {
+      "home": {
+        "jersey_color": "#0033A0",
+        "numbers_color": "#FFD600",
+        "trim_color": "#E31837"
+      },
+      "away": {
+        "jersey_color": "#FFFFFF",
+        "numbers_color": "#0033A0",
+        "trim_color": "#E31837"
+      }
+    },
+    "meta": {
+      "created_at": "2025-10-20T21:55:58.281235Z",
+      "created_by": "system:chatgpt",
+      "version": 1
+    },
+    "descriptions": {
+      "es": "Los Caribeños representan el espíritu cálido, alegre y competitivo del Caribe. Un equipo que combina pasión, técnica y camaradería en cada juego.",
+      "en": "Caribeños embody the warm, joyful and competitive spirit of the Caribbean, bringing passion, skill and camaraderie to every game."
+    },
+    "contacts": {
+      "manager_name": "",
+      "manager_email": "",
+      "manager_phone": ""
+    },
+    "social": {
+      "instagram": "",
+      "facebook": "",
+      "x": ""
+    },
+    "roster": [],
+    "staff": [],
+    "season_data": {
+      "current_season": 2025,
+      "stats_seed": {
+        "games_played": 0,
+        "wins": 0,
+        "losses": 0,
+        "ties": 0,
+        "runs_scored": 0,
+        "runs_allowed": 0
+      }
+    }
+  }
+}

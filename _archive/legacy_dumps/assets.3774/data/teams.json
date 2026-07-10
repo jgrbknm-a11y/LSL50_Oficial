@@ -1,0 +1,19 @@
+{
+    "name": "teams",
+    "data": [
+        {
+            "id": "L50-001",
+            "name": "Legends A",
+            "manager": "Juan Pérez",
+            "city": "Broward, FL",
+            "founded": 2025
+        },
+        {
+            "id": "L50-002",
+            "name": "Legends B",
+            "manager": "Carlos Ruiz",
+            "city": "Broward, FL",
+            "founded": 2025
+        }
+    ]
+}

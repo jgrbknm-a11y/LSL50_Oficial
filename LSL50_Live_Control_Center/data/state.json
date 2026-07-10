@@ -1,0 +1,102 @@
+{
+  "visitorTeam": "Cerveceros",
+  "homeTeam": "Caribeños",
+  "visitorScore": 0,
+  "homeScore": 0,
+  "inning": "1RO▲",
+  "balls": 0,
+  "strikes": 0,
+  "outs": 0,
+  "bases": {
+    "first": false,
+    "second": false,
+    "third": false
+  },
+  "batter": {
+    "number": "",
+    "name": "",
+    "avg": ".000",
+    "hr": 0,
+    "rbi": 0,
+    "photo": "",
+    "id": 0
+  },
+  "pitcher": {
+    "name": "Carlos Pérez",
+    "ip": "3.0",
+    "k": 4,
+    "bb": 1,
+    "er": 2,
+    "photo": ""
+  },
+  "ticker": {
+    "nextGame": "Cubs vs Bucaneros",
+    "time": "11:30 AM",
+    "web": "legendssoftball50.com"
+  },
+  "players": [
+    {
+      "number": 27,
+      "name": "José Ramírez",
+      "team": "Bucaneros",
+      "avg": ".412",
+      "hr": 3,
+      "rbi": 14
+    },
+    {
+      "number": 12,
+      "name": "Miguel Soto",
+      "team": "Bucaneros",
+      "avg": ".358",
+      "hr": 5,
+      "rbi": 18
+    },
+    {
+      "number": 34,
+      "name": "Roberto García",
+      "team": "Bucaneros",
+      "avg": ".295",
+      "hr": 2,
+      "rbi": 9
+    },
+    {
+      "number": 7,
+      "name": "Luis Hernández",
+      "team": "Caribeños",
+      "avg": ".333",
+      "hr": 4,
+      "rbi": 16
+    },
+    {
+      "number": 21,
+      "name": "Manuel Torres",
+      "team": "Caribeños",
+      "avg": ".301",
+      "hr": 1,
+      "rbi": 11
+    },
+    {
+      "number": 9,
+      "name": "Antonio Ruiz",
+      "team": "Caribeños",
+      "avg": ".276",
+      "hr": 0,
+      "rbi": 7
+    }
+  ],
+  "scorebook": {
+    "game_id": 7,
+    "half": "top",
+    "play_count": 9,
+    "last_play": {
+      "id": 151,
+      "inning": 1,
+      "half": "bottom",
+      "result": "OUT",
+      "batter_name": "Elvis Suarez",
+      "outs_on_play": 1,
+      "runs_scored": 0,
+      "label": "Out"
+    }
+  }
+}

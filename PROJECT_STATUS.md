@@ -1,0 +1,250 @@
+# LSL50 Project Status
+
+## Continuation Checkpoint
+
+- Start next session from `START_HERE_LSL50.md`.
+- Checkpoint updated: 2026-07-09 21:58:00 EDT.
+- Latest milestone: Added the official scorebook consultation view and PDF export for scorer games.
+- Current next step: validate the consultation/export flow during a full real-game test after closing a game officially.
+- Secondary next steps: continue scoring/testing the remaining first-jornada games and review the public homepage after more official scores/news are added.
+- Latest stats-rule update: leaders now use MLB-style hit logic and MLB-style PA qualification for rate stats.
+- Latest scorer-rule update: the notebook now displays PA automatically using `AB + BB + HBP + SH + SF`. Postseason eligibility requires at least 3 legal games, and each legal game requires at least 1 PA.
+- The legal-game calculation for postseason eligibility now uses PA, not AB alone: `AB + BB + HBP + SH + SF > 0`.
+- Scorer App checkpoint:
+  - URL: `http://127.0.0.1:8090/scorer/?game_id=3&view=plays#plays`
+  - current lineup work URL: `http://127.0.0.1:8090/scorer/?game_id=3&view=lineups#scorerTabs`
+  - current stats work URL: `http://127.0.0.1:8090/scorer/?game_id=3&view=stats#scorerTabs`
+  - current consultation/export URL: `http://127.0.0.1:8090/scorer/?game_id=5&view=review#scorebookReview`
+  - scorer view switcher is global above the game workspace and sticky, so `Cuaderno`, `Lineup`, `Estadísticas`, and `Consulta` remain visible after changing screens
+  - latest browser verification confirmed the global view switcher appears in the consultation view and exposes the official PDF button
+  - official scorebook PDFs are generated at `LSL50_Website_System/output/pdf/lsl50_scorebook_game_{game_id}.pdf`
+  - PIN: managed in Admin → Anotador / `app_settings` (not documented in plaintext)
+  - game `4` bitacora is clean after removing the invalid mixed-team test play
+  - `Lineup oficial` section now exists per team
+  - each team lineup now supports up to 15 batting slots
+  - browser verification passed: two lineup forms appear, alert boxes exist, official positions are listed, corredor emergente block appears, and the state panel shows inning/half/batting team/next batter
+  - official lineup positions are `P`, `C`, `1B`, `2B`, `3B`, `SF`, `LF`, `CF`, `CR`, `RF`, `DH`, `OTRO`
+  - required field positions cannot be missing: `P`, `C`, `1B`, `2B`, `3B`, `SF`, `LF`, `CF`, `CR`, `RF`
+  - repeated players and repeated positions are blocked in browser and server validation, except `DH`
+  - `DH` is the only position/turn role that may repeat in a lineup
+  - corredor emergente can replace a runner on base without altering the batting order or counting as a plate appearance
+  - new `game_lineups` table stores lineup by game, team, batting order, player, and field position
+  - main scoring notebook table now sorts players by saved lineup order and labels players outside the lineup
+  - scorer calculates current inning, half, batting team, outs, and next batter from saved lineup and play events
+  - `Control de jugadas y corredores` now shows current team/inning/half/outs/next batter and changes to `Cambio de entrada confirmado` after a third-out play
+  - batter selector locks to the active lineup turn when a lineup exists
+  - batters above/below the current turn cannot be selected manually
+  - after saving a play, the next lineup batter activates automatically
+  - scorer blocks plays that do not match the current flow or the expected lineup batter
+  - PA appears automatically in the scoring notebook and recalculates live from AB, BB, HBP, SH, and SF
+  - semifinal/final eligibility requires 3 legal games; a legal game requires at least 1 PA
+  - batter/runners are now validated against the selected batting team before saving
+  - player lists are filtered by batting team
+  - batter destination is filled automatically from the selected result
+  - selecting `Hit sencillo` automatically places the current batter on 1B in the live diamond, while still allowing manual advancement to another base
+  - selecting `Jonrón` automatically sends the batter and all occupied runners home, clears the live diamond, and suggests matching runs/RBI
+  - selecting `Doble` with a runner on 1B automatically suggests the runner to 3B and alerts the scorer to confirm 3B, Home, or Out
+  - `Wild pitch` and `Passed ball` are treated as runner-advance events only: they do not move the batter, do not advance the lineup turn, and do not allow Home under the current league rule
+  - play-by-play events now rebuild the game box score automatically, so BB/HBP/hits/runs/RBI appear in the cuaderno after saving plays
+  - scorer play entry was reorganized as a numbered workflow: current batter, result, runner advancement, confirmation
+  - the current batter now appears as a clear locked card instead of a long visible select list
+  - quick result buttons were added for common scoring actions: Out, Hit, Doble, Triple, HR, BB, Golpeado, Error, K, SF, and WP
+  - live diamond now sits in the main cuaderno flow, directly below the situation bar
+  - corredor emergente is now an expandable secondary tool
+  - lineup and manual numeric stats are now separate scorer views instead of being mixed into the main cuaderno
+  - top situation bar now displays score, batting team, next batter, and bases
+  - confirmation step now shows an automatic play preview before saving
+  - side panel now shows the latest saved play
+  - `Deshacer última jugada` is available from the scorer side panel for fast correction
+  - scorecard-style hoja de anotación was removed after user review
+  - quick play buttons are now compact and grouped like a digital scorebook
+  - 57 visible play buttons now cover hits, bases, strikeouts, fly outs, line outs, pop outs, groundouts, force outs, double plays, errors by position, sacrifices, runner plays, and production
+  - defensive quick buttons can fill out details such as `G6-3`, `CS`, and `6-4-3`
+  - note-driven buttons can fill the notes field, such as `IBB`, `E6`, `CS`, and `PK`
+  - scorer now has a `Detalle del out` field for normal scorebook codes
+  - suggested out codes include strikeout, fly outs, line outs, pop outs, ground outs, force outs, double plays, sacrifice fly, sacrifice bunt, and fielder choice
+  - `SO` auto-fills `K`, `SF` auto-fills `SF`, and `SH` auto-fills `SH`
+  - bitacora rows show the out detail beside the result, for example `Out (G6-3)` or `Ponche (K)`
+  - visual redesign phase 1 applied: professional scoreboard header, inning/outs display, cleaner game strip, stronger live-diamond placement, two-column scoring focus area, better play-button hierarchy, and cleaner bitacora styling
+  - `php -l LSL50_Website_System/scorer/index.php` passed after visual redesign phase 1
+  - visual redesign phase 2 applied: larger responsive live diamond, shorter secondary scoring buttons, clearer automatic play preview, stronger orange save action, cleaner side panels, improved runner-name truncation for tablet use, and compact always-visible scorer tabs on mobile/tablet
+  - `php -l LSL50_Website_System/scorer/index.php` passed after visual redesign phase 2
+  - double-play scorer logic refined: `6-4-3`, `4-6-3`, and `5-4-3` put the runner from 1B out and the batter out at 1B; `5-2-3`, `1-2-3`, and `3-2-3` put the runner from 3B out at home and the batter out at 1B
+  - double-play previews now consider existing outs before the play, so a DP that completes the third out does not automatically credit a run from 3B
+  - force-play scorer logic refined: `6-4`, `4-6`, and `5-4` put the runner from 1B out and leave the batter on 1B as `FC`; `5-2`, `1-2`, and `3-2` put the runner from 3B out at home and leave the batter on 1B as `FC`
+  - browser verification passed after the double-play update: `DP 6-4-3` and `DP 5-2-3` load the correct result, out detail, two outs, batter destination, runner destinations, and warning text
+  - user test result: the cuaderno is performing correctly after real use testing
+  - official LSL50 logo now appears below the live diamond with `Software oficial - Derechos reservados LSL50`
+  - `php -l LSL50_Website_System/scorer/index.php` passed after the official software mark
+  - pending official rule module: regular season and semifinals are `1h 45m` or `7 innings`, whichever comes first
+  - pending official rule module: semifinals/final can continue to extra innings when needed
+  - pending official rule module: rain suspension and legal game after `5 complete innings`
+  - pending official review module: official scorebook consultation/export for verification requests
+  - known local environment note: the old PHP process on port `8080` did not refresh the new visual layout during the pass; the updated preview is running on port `8090`
+
+## Working Copies
+
+- `LSL50_Live_Control_Center/`: local OBS overlay/control system.
+- `LSL50_Website_System/`: copied website/admin/API files from the hosting backup.
+
+## Verified
+
+- The Live Control Center runs locally on port `5050`.
+- Control panel: `http://127.0.0.1:5050/control.html`
+- OBS browser source: `http://127.0.0.1:5050/overlay.html`
+- API state endpoint: `http://127.0.0.1:5050/api/state`
+- The website/admin system now runs locally on port `8080`.
+- Admin panel: `http://127.0.0.1:8080/admin/index.php`
+- Local admin pages verified: teams, players, games, media, awards.
+- Control Center can now sync players from the local admin export endpoint.
+- Player export endpoint: `http://127.0.0.1:8080/api/control-center-players.php`
+- Postseason-eligible player export endpoint: `http://127.0.0.1:8080/api/control-center-players.php?postseason=1`
+- The admin now supports season lifecycle management.
+- Seasons page: `http://127.0.0.1:8080/admin/seasons.php`
+- Automatic schedule page: `http://127.0.0.1:8080/admin/schedule.php`
+- Current generated schedule PDF: `LSL50_Website_System/output/pdf/lsl50_schedule_season_1.pdf`
+
+## Completed In This Pass
+
+- Copied the discovered systems into `LSL50_Official_Project`.
+- Kept originals untouched.
+- Removed demo team choices from the Live Control Center.
+- Set the initial live game to `Bucaneros` vs `Caribeños`.
+- Added simple team marks for `Bucaneros`, `Caribeños`, `Cubs`, and `Hispanos` in the overlay.
+- Removed the automatic browser-open call from `server.py` to avoid macOS launch errors.
+- Added a safe local SQLite config for the website/admin system.
+- Added missing local admin header/footer partials.
+- Seeded the local admin database with `Bucaneros`, `Caribeños`, `Cubs`, and `Hispanos`.
+- Adjusted admin queries so they work locally with SQLite.
+- Added a Control Center "SINCRONIZAR ADMIN" button.
+- Added an admin-to-overlay player export endpoint for `number`, `name`, `team`, `AVG`, `HR`, and `RBI`.
+- Added player birth date and automatic age calculation.
+- Age validation is color-coded: 50+ green, under 50 or missing birth date red.
+- Added semifinal/postseason eligibility rule: player must have at least 3 legal games.
+- A legal game for eligibility requires at least 1 at-bat in that game.
+- Age remains color-coded as league information, but postseason roster exclusion is based on the 3 legal-game minimum.
+- Players who do not meet the 3 legal-game rule are excluded from the postseason-eligible roster, without being deleted from the database.
+- Control Center now has a `ROSTER SEMIFINAL` sync button that imports only postseason-eligible players.
+- Team creation now supports adding the initial player roster directly inside the team form.
+- Team listing shows how many players are attached to each team.
+- The game scoring notebook now loads both teams' rosters automatically when opening `Anotar`.
+- Saved game boxes now update player statistics directly from the notebook.
+- Game final scores are now calculated automatically from each team's player runs in the notebook.
+- Team standings are recalculated from saved game boxes to prevent duplicate wins/losses/runs when editing a game.
+- The scoring notebook preserves saved stat values when reopening a game for correction.
+- The legal-game rule is preserved: only rows with `AB > 0` count toward the 3-game postseason minimum.
+- Added a leaders page for offensive departments using the statistics generated by the scoring notebook.
+- Leaders now follow MLB-style rules: `2B`, `3B`, and `HR` are included in official hits, total bases are calculated from singles/doubles/triples/homers, and AVG/OBP/SLG/OPS require at least `3.1` plate appearances per team game.
+- Redesigned the admin Leaders page based on the previous LSL50 live-system reference: searchable general batting table, mobile-friendly horizontal stats table, PA minimum display, department ranking cards, and pitcher wins.
+- Connected the Publicador IA configuration to real API workflows: OpenAI key testing, OpenAI-powered note drafting through the Responses API with local fallback, editable model setting, YouTube API key storage, YouTube channel sync for recent videos, and video selection when generating game notes.
+- Expanded the scoring notebook after reviewing scorebook/scorekeeping references: added `HBP`, `SH`, `SF`, and defensive `E` to the tablet scorer, admin scorer, database, stat recalculation, leaders, AI context, and public boxscore.
+- Added runner-advancement play tracking through the new `game_play_events` table and a tablet Scorer App section for inning/half, batter result, base-runner movement, outs, RBI, runs, and notes. Publicador IA now receives those play-by-play records as context.
+- Added a live visual diamond to the tablet Scorer App. Bases shade yellow when occupied and update immediately as the scorer marks batter and runner destinations.
+- Corrected the play-by-play log controls after the Cubs vs Sharks test entry. The invalid mixed-team play was removed from game `4`, the scorer now blocks plays where batter/runners do not belong to the batting team, player lists are filtered by batting team, and the batter destination is filled automatically from the selected result.
+- Added official lineup control to the tablet Scorer App. Each game/team can store batting order and field position, and the play form uses that lineup to control the next batter, inning/half flow, and 3-out transitions.
+- Added lineup validation for duplicate players, duplicate positions, missing required field positions, and added corredor emergente handling as a special play event that does not affect batting order.
+- Updated the scoring notebook table so it displays players in the saved lineup batting order, with batting turn and field position shown beside each player.
+- Added a visible turn alert to the scorer play controls so the scorer sees who bats next and gets a change-of-inning confirmation after the third out.
+- Locked the play-entry batter selector to the active lineup turn so only the correct batter can be scored, and the next batter activates after saving the play.
+- Added automatic PA display to the scorer notebook using the official formula `AB + BB + HBP + SH + SF`, with live recalculation in the tablet screen.
+- Reinforced automatic batter-base placement in the scorer: hits, walks, HBP, errors, fielder choice, doubles, triples, and home runs set the batter destination automatically and update the live diamond.
+- Corrected home run runner handling so runners cannot remain on base after a HR; server-side save now also converts blank/stay runner destinations to home for HR plays.
+- Corrected double runner advancement handling so a runner on 1B cannot remain short on a double; existing Kelvin Joga/Alex Almeida test play was rectified so Almeida scores from 1B and Kelvin remains on 2B.
+- Corrected WP/PB handling: runner advances are limited to 2B/3B, the batter continues in the same turn, and the saved Kelvin Joga/Jose Reyes test now reflects WP from 2B to 3B.
+- Connected the scorer bitacora to the game stats table. Verified Jose Reyes BB and Yordin Rodriguez HBP now appear in the cuaderno with PA calculated.
+- Corrected BB/HBP forced-runner logic. On walks or hit-by-pitch, the scorer now automatically forces `1B -> 2B`, `2B -> 3B` only when the force chain exists, and scores `3B -> Home` only with bases loaded. The existing game `3` HBP test now shows Yordin Rodriguez on `1B`, Jose Reyes on `2B`, and Kelvin Joga on `3B`.
+- Corrected single-hit runner advancement logic. On a `1B` result, the batter is placed on first, runner on third is suggested to score, runner on second is suggested to advance at least to third, runner on first is suggested to advance to second, and the scorer can still manually adjust the final destinations before saving.
+- Corrected triple runner advancement logic. On a `3B` result, the batter is placed on third, runners already on base are suggested to score, runs/RBI are filled from the scoring runners, and the saved game `3` BB/triple sequence now has Brian Field, Nestor Matheus, and Eduard Peralta scoring on Avelo Banez's triple.
+- Corrected three-out inning transition logic. Saved game `3` now counts the three final Hispanos outs and advances to the bottom of the first with Bucaneros batting; future `OUT`, `SF`, and `SH` plays default to one out if the scorer leaves the out count empty.
+- Corrected sacrifice fly logic. On `SF`, the batter is out, the runner on third is suggested to score, one RBI/run is filled, and game `3` now records Isaac Carciente scoring on Michael Gonzalez's sacrifice fly while Douglas Gonzalez stays on second.
+- Corrected error-with-force logic. On an `E` where the batter reaches first, forced runners now advance; with bases loaded the runner on third scores, runs are counted, and RBI remains zero. Saved game `3` bases-loaded errors now score the forced runner correctly without RBI.
+- Added strikeout (`SO` / `Ponche`) as a scorer result. It records the batter out, defaults to one out, counts as an official at-bat, and increments the batter's strikeout stat.
+- Added traditional scorebook-style out details to the scorer. The play form now captures codes like `K`, `F8`, `G6-3`, `6-4-3`, `SF`, `SH`, or a custom code, stores them in `game_play_events.out_detail`, and shows them in the bitacora beside the result.
+- Redesigned the Scorer App play-entry screen into a more professional cuaderno workflow. The screen now prioritizes the active play, hides the locked batter select behind a clear current-batter card, adds quick result buttons, separates runner advancement from final confirmation, places the live diamond in the main cuaderno flow, moves corredor emergente into an expandable secondary panel, and separates lineup/manual stats into their own views.
+- Added a more complete digital-scorebook layer to the Scorer App: situation bar, automatic play preview before save, latest-play side panel, and a one-click `Deshacer última jugada` correction workflow.
+- Removed the experimental scorecard-style hoja de anotación from the Scorer App.
+- Expanded the Scorer App play-entry panel to 51 compact grouped buttons, including hits, bases, strikeouts, fly/line/pop outs, groundouts, force outs, double plays, errors E1-E9, sacrifices, runner plays, RBI, and run adjustments.
+- Added official game validation controls to the Scorer App lineup screen: normal final, time limit, 7 innings, extra innings, rain legal/not legal, and forfeit.
+- Added one-game borrowed-player support for avoiding forfeit. Borrowed players are registered for a specific game, can be placed in the lineup of the borrowing team, do not change official roster ownership, and their stats for that game count to the borrowing team's box score.
+- Added database support for official game status/result fields and `game_borrowed_players`.
+- Team standings now include official forfeits even when no individual stats exist for that game.
+- Verified `/scorer/?game_id=3&view=lineups#scorerTabs` shows `Jugador prestado para este juego`, `Validación oficial`, `Forfeit`, and `Lineup oficial`.
+- Added `SS` to Scorer App lineup positions and required lineup validation while keeping `SF` available.
+- Validated official-game controls without altering real game data: borrowed-player simulation, forfeit standings simulation, and browser confirmation all passed.
+- Hardened and validated official game-closure rules: normal/time/innings/extra-inning finals become legal games, rain legal requires 5 completed innings, rain suspended remains non-counting, and forfeit remains a legal final result.
+- Created a resume checkpoint in `START_HERE_LSL50.md` on `2026-07-09 22:38:55 EDT`.
+- Corrected the Scorer App game-date search so it only appears in `Consulta` for stored-game audit and verification, not in live `Cuaderno` or `Lineup`.
+- Corrected official game closure so open games no longer default to `Pendiente / sin cerrar`; the closure form now defaults to a real closing result and uses `Cerrar juego y pasar al próximo`.
+- Official closure now rebuilds the game box score from the play log before saving non-forfeit final results.
+- Closed game `3`, `Bucaneros vs Hispanos`, as `Final por 7 innings` with note `Cerrado por innings completos`.
+- Regenerated the official scorebook PDF for game `3` at `LSL50_Website_System/output/pdf/lsl50_scorebook_game_3.pdf`.
+- Verified that the scorer now defaults to the next open game after closed games; current next open game is game `5`, `Caribeños vs Cerveceros`.
+- Updated the Scorer App router so tablet mode can serve official PDFs under `/output/pdf/`.
+- Added a top closure banner to the Scorer App showing whether the selected game is open or closed, with direct access to official validation.
+- Closed games now block further scoring, lineup/stat edits, borrowed-player changes, courtesy runners, and play deletion unless reopened from official validation.
+- Closed games hide the play-entry form and show a closed-game notice in the live scorer view.
+- After official closure, the scorer redirects away from the closed game and defaults to the next open game so the next scorekeeping session starts clean.
+- Closed games no longer render borrowed-player controls, lineup-edit forms, or editable manual stats; only official validation/reopening remains visible until consultation/export is built.
+- Closure reason is now shown as `Motivo del cierre` in the top closure banner and closed-game notice; the validation field was renamed to `Motivo del cierre / nota oficial`.
+- Created a resume checkpoint in `START_HERE_LSL50.md` on `2026-07-08 22:09:15 EDT`. Current scorer test state is game `3`, Bucaneros `16` - Hispanos `8`, latest event `45` bottom 1st with Angel Martinez out and Isaac Carciente on third. Next work should continue testing inning flow after Bucaneros reaches three outs.
+- Created a resume checkpoint in `START_HERE_LSL50.md` on `2026-07-09 20:27:34 EDT` after adding official validation and borrowed-player support.
+- Added a pitcher winner field to games so the leaders page can rank pitchers by games won.
+- The scoring notebook now includes a "Pitcher ganador" selector; ties do not assign a pitcher win.
+- Added a separate Scorer App at `/scorer/` for tablet-based game scoring without admin panel access.
+- The Scorer App uses its own PIN login and updates the same game boxes, player stats, standings, leaderboards, pitcher wins, and postseason eligibility.
+- Added a Scorer App router that can serve only `/scorer/` and uploaded assets, blocking `/admin` when launched as a separate tablet-facing server.
+- Added admin Scorer App PIN management at `/admin/scorer.php`.
+- Scorer PIN is stored in `app_settings` (optional env override `LSL50_SCORER_PIN`). Do not commit the PIN in docs.
+- Added the two missing current-season teams: `Cerveceros` and `Sharks`.
+- The current local database now has the required 6 teams for official schedule generation.
+- Live Control Center team selectors and overlay team colors now include `Cerveceros` and `Sharks`.
+- Imported official rosters for all 6 teams: `Bucaneros`, `Caribeños`, `Cerveceros`, `Cubs`, `Hispanos`, and `Sharks`.
+- Current imported player count is 107 across 6 teams.
+- Copied and linked the official league logo and all 6 team logos.
+- The Control Center player export now returns the 107 imported players.
+- Generated the official 6-team current-season schedule.
+- Schedule now follows the provided professional reference calendar format.
+- Schedule contains 39 total entries: 30 regular season games, 2 league off dates, 6 semifinal placeholders, and 1 final.
+- Every team has exactly 10 regular season games.
+- Current schedule runs from 2026-06-14 through 2026-09-27.
+- Schedule times are distributed across the official slots: `09:30`, `11:30`, and `13:30`; the PDF displays them as `9:30 AM`, `11:30 AM`, and `1:30 PM`.
+- Generated the official schedule PDF at `LSL50_Website_System/output/pdf/lsl50_schedule_season_1.pdf`.
+- Updated the schedule PDF generator to produce a one-page professional landscape layout with league logo, formal header, compact regular-season table, league off dates, playoff table, and administrative note.
+- Verified the schedule admin page, PDF text content, PDF metadata, and rendered PDF page image.
+- Added share actions to the schedule page after PDF generation: open PDF, send by email, send by WhatsApp, and native device share when supported.
+- Added a public league homepage at `/` with automatic sections for previous jornada results, featured news/media, standings, upcoming games, and leaders.
+- The homepage reads from the same admin/scorer data, so results, standings, and leaders update after games are scored.
+- Standardized homepage game logos to the same size and left-side alignment.
+- Added the `Publicador IA` admin module as the control center for future automated game notes, YouTube video analysis, highlight clip selection, and publishing mode.
+- Configured the LSL50 YouTube channel as `https://www.youtube.com/@LegendsSoftballLeague50`.
+- Added the `ai_game_notes` publishing table and connected published AI notes to the public homepage.
+- Publicador IA can now generate draft game notes from official box score statistics, keep them in review mode, and publish/unpublish them on the homepage.
+- OpenAI and YouTube API keys can be stored from the Publicador IA screen; until keys are added, the system uses local stats-based note generation and manual YouTube video URL entry.
+- Improved game creation: the admin Games page now validates manual games, defaults to different teams/date, and can create the next official calendar jornada automatically.
+- Created the first official jornada from the schedule: Caribeños vs Cerveceros, Cubs vs Sharks, and Bucaneros vs Hispanos on 2026-06-14.
+- Redesigned the public homepage toward the current live-site style: dark sports theme, large latest-result scoreboard, compact game calendar cards, editorial news cards, standings, and leaders.
+- Latest-result logic now filters out unscored 0-0 games and only uses games with box score data or a real final score.
+- Improved the admin Leaders page with a standings summary and main leader summary cards before the full department tables.
+- Added local season tables and archive snapshots.
+- Added a "Temporadas" admin page to close the active season, save history, start a new season, reset stats, and keep/import the roster.
+- Games and box score rows now attach to the active season.
+- Added an automatic schedule generator for regular season, semifinals, and final.
+- Official current-season schedule is configured for exactly 6 teams.
+- Regular season generation is double round-robin, using the configured game slots.
+- With 6 teams, regular season is 30 games: 10 dates with 3 games per date.
+- Default slots are `09:30`, `11:30`, and `01:30`.
+- Playoff format is defined as 1 vs 4 and 2 vs 3 semifinals, best-of-3 with game 3 if needed; final is a single championship game.
+- Added PDF export for the generated schedule and visually verified the rendered PDF pages.
+
+## Needs Attention
+
+- The Laravel side still needs a safe local `.env` plus dependencies before it can be run cleanly.
+- The simple PHP admin is now usable locally, but it is not connected to the live website database.
+- Bucaneros roster image has 12 players with no visible birth date; those players remain marked red by age validation until dates are added.
+- Imported rosters contain 48 players under 50 based on provided birth dates; the system marks them red but does not block them.
+- Hispanos roster has duplicate jersey number `23` in the source image.
+- Caribeños source had one exact duplicate row for Jose Rojas; the importer skipped the duplicate.
+- The Live Control Center can sync the imported roster from admin, but player stats remain 0 until games are scored.
+- Historical snapshots are stored locally in `season_archives.snapshot_json`; a future step can add export/download buttons for those archives.
+- Current local database has 6 teams loaded with all current official rosters imported.
+- Postseason entries currently use standing placeholders such as `1ro Regular` and `4to Regular`; a future step can auto-resolve those placeholders after the regular season standings are final.
