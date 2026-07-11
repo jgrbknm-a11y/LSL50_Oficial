@@ -1,5 +1,8 @@
 <?php
 require __DIR__ . "/config.php";
+require_once __DIR__ . "/src/autoload.php";
+
+use Lsl50\Support\YoutubeHelper;
 
 $pdo = db();
 $season = active_season($pdo);
@@ -35,7 +38,7 @@ function public_leader(PDO $pdo, string $expr, string $where, string $order, boo
         AND EXISTS (SELECT 1 FROM game_player_stats gps WHERE gps.game_id=g.id)
     )";
   }
-  $sql = "SELECT p.first_name || ' ' || p.last_name player_name, p.number, t.name team_name, $expr leader_value
+  $sql = "SELECT " . lsl_sql_full_name("p") . " player_name, p.number, t.name team_name, $expr leader_value
     FROM player_stats ps
     JOIN players p ON p.id=ps.player_id
     LEFT JOIN teams t ON t.id=p.team_id
@@ -114,7 +117,7 @@ $leaderCards = [
   ["label" => "Impulsadas", "abbr" => "RBI", "row" => public_leader($pdo, "ps.RBI", "ps.RBI > 0", "ps.RBI DESC"), "format" => "int"],
 ];
 
-$pitcherLeader = $pdo->query("SELECT p.first_name || ' ' || p.last_name player_name, p.number, t.name team_name, COUNT(*) leader_value
+$pitcherLeader = $pdo->query("SELECT " . lsl_sql_full_name("p") . " player_name, p.number, t.name team_name, COUNT(*) leader_value
   FROM games g
   JOIN players p ON p.id=g.winning_pitcher_id
   LEFT JOIN teams t ON t.id=p.team_id
@@ -140,30 +143,18 @@ function display_leader_value(?array $card): string {
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Legends Softball League 50+</title>
-  <style>
-    :root{--navy:#061b3b;--blue:#0f3d75;--gold:#d7a72f;--red:#b42318;--ink:#152033;--muted:#667085;--line:#d9e0ea;--bg:#f4f6f8;--card:#fff}
-    *{box-sizing:border-box} body{margin:0;background:#07111c;color:#f8fafc;font-family:Arial,Helvetica,sans-serif} a{color:inherit}
-    .top{background:#111f2d;color:white;border-bottom:1px solid #2a3b4d}.bar{max-width:1180px;margin:0 auto;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-    .brand{display:flex;align-items:center;gap:12px;font-weight:900;letter-spacing:.03em}.brand img{width:66px;height:66px;object-fit:contain}.brand strong{font-size:22px}.brand span{font-size:12px;color:#91a1b5;display:block;margin-top:2px}
-    .nav{display:flex;gap:8px;flex-wrap:wrap}.nav a{text-decoration:none;color:#dce7f5;font-weight:900;border-radius:8px;padding:9px 11px;background:#172738}.nav a:hover{background:#22384d}
-    .hero{background:#08131e;color:white}.hero-inner{max-width:1180px;margin:0 auto;padding:28px 18px 18px}.hero-copy{margin-bottom:18px}.eyebrow{color:#25d366;font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.14em}.hero h1{font-size:46px;line-height:1.02;margin:8px 0 12px;max-width:820px}.hero p{font-size:17px;color:#a8b4c5;margin:0;max-width:760px}.season-pill{display:inline-block;background:#111f2d;border:1px solid #33465a;border-radius:999px;padding:8px 12px;font-weight:900;margin-top:16px;color:#dce7f5}
-    main{max-width:1180px;margin:0 auto;padding:22px 18px 42px}.grid{display:grid;gap:18px}.cols-2{grid-template-columns:1.08fr .92fr}.cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}
-    .card{background:#122232;border:1px solid #314254;border-radius:16px;padding:18px;color:#f8fafc;box-shadow:0 14px 28px rgba(0,0,0,.18)}.section-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:26px 0 14px}.section-title{font-size:31px;line-height:1.05;font-weight:950;margin:0;color:#fff}.section-link{color:#1e90ff;text-decoration:none;font-weight:900}.small{font-size:14px;color:#91a1b5}
-    .scorecard{overflow:hidden;padding:0}.scorebar{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#09131d;border-bottom:1px solid #314254;padding:16px 18px}.scorebar strong{color:#25d366;letter-spacing:.12em}.scorebar span{color:#a8b4c5;font-weight:900;letter-spacing:.08em}.scorebody{padding:22px 18px}.score-main{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px}.score-team{text-align:center}.score-team img{width:92px;height:92px;object-fit:contain}.score-team h3{font-size:23px;margin:8px 0 4px;text-transform:uppercase}.record{color:#91a1b5;font-weight:900}.bigscore{font-size:54px;font-weight:950;white-space:nowrap}.bigscore .winner{color:#ff6b00}.bigscore .dash{color:#627086;margin:0 8px}.diamond{height:105px;display:grid;place-items:center;color:#536173;font-size:54px}.final-label{text-align:center;color:#ff6b00;font-weight:950;letter-spacing:.12em;margin-bottom:4px}.line-score{margin-top:18px;width:100%;border-collapse:collapse}.line-score th,.line-score td{border-bottom:1px solid #415267;padding:12px 4px;text-align:right}.line-score th:first-child,.line-score td:first-child{text-align:left}.line-score th{color:#7f8ea2;font-size:12px;letter-spacing:.12em}.line-score td{font-size:20px;font-weight:900}.line-score .accent{color:#ff6b00}
-    .game-list{display:grid;gap:12px}.game-row{display:grid;grid-template-columns:76px 1fr auto;gap:12px;align-items:center;background:#0b1621;border:1px solid #203246;border-radius:12px;padding:12px}.game-date{color:#91a1b5;text-transform:uppercase;font-weight:900}.game-date b{display:block;color:#fff;font-size:24px}.teams-line{display:grid;gap:8px}.mini-team{display:grid;grid-template-columns:38px 1fr;gap:8px;align-items:center;font-weight:900}.mini-team img{width:38px;height:38px;object-fit:contain}.game-time{font-size:24px;font-weight:950;text-align:right;color:#fff}
-    .news-grid{display:grid;gap:18px}.news-card{background:#122232;border:1px solid #314254;border-radius:16px;overflow:hidden}.news-thumb{height:168px;background:#243449;display:grid;place-items:center;color:#6e7e92;font-size:38px;font-weight:900}.news-thumb img{width:100%;height:100%;object-fit:cover}.tag{display:inline-block;background:#ff6b00;color:white;border-radius:8px;padding:8px 13px;font-weight:950;letter-spacing:.08em;margin-bottom:12px}.news-content{padding:18px}.news-title{font-size:28px;line-height:1.08;font-weight:950;color:#fff;margin:0 0 12px}.news-summary{color:#a8b4c5;font-size:17px;line-height:1.45;margin:0 0 14px}.meta{color:#7f8ea2;font-weight:800}
-    table{width:100%;border-collapse:collapse} th,td{border-bottom:1px solid #314254;padding:9px;text-align:left;vertical-align:middle} th{font-size:12px;color:#7f8ea2;text-transform:uppercase} td strong{color:#fff}.team{display:grid;grid-template-columns:36px minmax(0,1fr);align-items:center;gap:9px;min-width:0}.team img{width:36px;height:36px;object-fit:contain}.team-name{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.leader{border:1px solid #314254;border-radius:12px;padding:13px;background:#0b1621}.leader b{display:block;font-size:12px;color:#91a1b5;text-transform:uppercase}.leader .value{font-size:30px;font-weight:950;color:#ff6b00;margin:4px 0}.leader .name{font-weight:900}.empty{color:#91a1b5;font-size:16px;border:1px dashed #314254;border-radius:14px;padding:24px;text-align:center;background:#0b1621}.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.btn{background:#1e90ff;color:white;text-decoration:none;border-radius:8px;padding:10px 12px;font-weight:900}.btn.secondary{background:#172738;color:#dce7f5}
-    @media(max-width:860px){.cols-2,.cols-3{grid-template-columns:1fr}.hero h1{font-size:34px}.section-title{font-size:32px}.score-main{grid-template-columns:1fr auto 1fr}.score-team img{width:74px;height:74px}.score-team h3{font-size:19px}.bigscore{font-size:44px}.game-row{grid-template-columns:64px 1fr}.game-time{grid-column:2;text-align:left;font-size:20px}.news-title{font-size:27px}.brand strong{font-size:18px}}
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/public/assets/css/lsl50-public.css">
 </head>
 <body>
-  <header class="top">
-    <div class="bar">
-      <div class="brand">
+  <header class="lsl-top">
+    <div class="lsl-wrap lsl-top-inner">
+      <div class="lsl-brand">
         <?php if ($leagueLogoUrl): ?><img src="<?= h($leagueLogoUrl) ?>" alt="LSL50"><?php endif; ?>
         <div><strong>LEGENDS SOFTBALL LEAGUE 50+</strong><span>Broward - Florida</span></div>
       </div>
-      <nav class="nav">
+      <nav class="lsl-nav">
         <a href="/admin/schedule.php">Calendario</a>
         <a href="/admin/leaders.php">Líderes</a>
         <a href="/admin/games.php">Juegos</a>
@@ -171,14 +162,12 @@ function display_leader_value(?array $card): string {
     </div>
   </header>
 
-  <section class="hero">
-    <div class="hero-inner">
-      <div class="hero-copy">
-        <div class="eyebrow">Portada oficial de la liga</div>
-        <h1>Resultados, posiciones y líderes de la jornada</h1>
-        <p>La portada se actualiza con los juegos anotados, las estadísticas del cuaderno oficial y las noticias destacadas cargadas en Media.</p>
-        <span class="season-pill"><?= h($season["name"]) ?></span>
-      </div>
+  <section class="lsl-hero">
+    <div class="lsl-wrap">
+      <div class="lsl-eyebrow">Portada oficial de la liga</div>
+      <h1>Resultados, posiciones y líderes de la jornada</h1>
+      <p>Actualización en tiempo real desde el cuaderno oficial, standings automáticos y crónicas IA multimedia.</p>
+      <span class="lsl-pill"><?= h($season["name"]) ?></span>
       <?php if ($recentResults): ?>
         <?php foreach (array_slice($recentResults, 0, 1) as $game): ?>
           <?php
@@ -257,14 +246,23 @@ function display_leader_value(?array $card): string {
         </div>
         <div class="news-grid">
           <?php if ($aiNews || $featuredNews): ?>
-            <?php foreach ($aiNews as $note): ?>
-              <article class="news-card">
-                <div class="news-thumb">IA</div>
-                <div class="news-content">
-                  <span class="tag">NOTICIA</span>
-                  <h3 class="news-title"><?= h($note["title"]) ?></h3>
-                  <p class="news-summary"><?= h($note["summary"]) ?></p>
-                  <div class="meta"><?= h(fmt_public_date($note["game_date"])) ?> · Legends Softball League +50</div>
+            <?php foreach ($aiNews as $note):
+              $vid = YoutubeHelper::extractVideoId($note["video_url"] ?? "");
+              $embed = YoutubeHelper::embedUrl($vid ?? "");
+            ?>
+              <article class="lsl-card lsl-news-card">
+                <div class="lsl-news-media">
+                  <?php if ($embed): ?>
+                    <iframe src="<?= h($embed) ?>" title="<?= h($note['title']) ?>" allowfullscreen loading="lazy"></iframe>
+                  <?php else: ?>
+                    <div class="lsl-news-media-placeholder">Crónica IA · LSL50</div>
+                  <?php endif; ?>
+                </div>
+                <div class="lsl-news-body">
+                  <span class="lsl-tag">Noticia IA</span>
+                  <h3 class="lsl-news-title"><a href="/news.php?id=<?= (int)$note['id'] ?>"><?= h($note["title"]) ?></a></h3>
+                  <p class="lsl-news-summary"><?= h($note["summary"]) ?></p>
+                  <div class="lsl-meta"><?= h(fmt_public_date($note["game_date"])) ?> · <?= h($note["away_name"]) ?> @ <?= h($note["home_name"]) ?></div>
                 </div>
               </article>
             <?php endforeach; ?>

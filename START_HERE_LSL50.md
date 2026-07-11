@@ -63,9 +63,30 @@ Cubre: **DP** (6-4-3, 5-4-3), **WP/PB**, **forfeit** (GameClosure + standings), 
 - **Game 7** — Cerveceros @ Sharks (E2E completo, 2–1 final)
 - **Game 3** — Bucaneros vs Hispanos (cerrado, PDF: `output/pdf/lsl50_scorebook_game_3.pdf`)
 
-### Próximo paso sugerido
+### Arquitectura unificada premium (Fase 1)
 
-Operar jornada en vivo: abrir game 5 en cuaderno, anotar, cerrar oficialmente, confirmar standings y sync OBS.
+Documento maestro: **`ARCHITECTURE_LSL50.md`**
+
+| Componente | Estado |
+|------------|--------|
+| `StatsEngine` + `GameClosurePipeline` | ✅ Recalc + IA al cerrar juego |
+| `AiNewsGenerator` | ✅ Crónica automática OpenAI/local |
+| API v1 (`/api/v1/standings.php`, `leaders.php`, `game.php`) | ✅ |
+| YouTube embed (`games.youtube_video_id`, `news.php`) | ✅ |
+| Frontend premium (`public/assets/css/lsl50-public.css`) | ✅ Fase 1 |
+| MySQL/PostgreSQL migration | ✅ Fase 2 (`docs/schema-mysql.sql`, `Database.php`) |
+
+**Panel OBS Control Center (`:5050/control.html`) — sin cambios operativos.**
+
+### MySQL (producción / staging)
+
+```bash
+docker compose up -d mysql
+php LSL50_Website_System/tools/bootstrap_mysql.php
+php LSL50_Website_System/tools/migrate_sqlite_to_mysql.php   # copia datos SQLite → MySQL
+```
+
+En `.env`: `DB_DRIVER=mysql`, `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`.
 
 ---
 

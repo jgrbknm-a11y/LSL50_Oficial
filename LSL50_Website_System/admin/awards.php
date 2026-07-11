@@ -1,7 +1,7 @@
 <?php
 require __DIR__ . "/../config.php"; require_admin();
 $pdo = db();
-$players = $pdo->query("SELECT id, first_name || ' ' || last_name full_name FROM players ORDER BY last_name")->fetchAll();
+$players = $pdo->query("SELECT id, " . lsl_sql_full_name_bare() . " full_name FROM players ORDER BY last_name")->fetchAll();
 $teams = $pdo->query("SELECT id, name FROM teams ORDER BY name")->fetchAll();
 
 if ($_SERVER['REQUEST_METHOD']==='POST') {
@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
   header("Location: /admin/awards.php"); exit;
 }
 
-$items = $pdo->query("SELECT wa.*, (SELECT first_name || ' ' || last_name FROM players WHERE id=wa.player_id) player_name, (SELECT name FROM teams WHERE id=wa.team_id) team_name FROM weekly_awards wa ORDER BY week_start DESC")->fetchAll();
+$items = $pdo->query("SELECT wa.*, (SELECT " . lsl_sql_full_name_bare() . " FROM players WHERE id=wa.player_id) player_name, (SELECT name FROM teams WHERE id=wa.team_id) team_name FROM weekly_awards wa ORDER BY week_start DESC")->fetchAll();
 include __DIR__ . "/../partials/header.php"; ?>
 
 <h1 class="text-2xl font-bold mb-4">Reconocimientos</h1>

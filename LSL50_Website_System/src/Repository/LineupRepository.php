@@ -3,6 +3,7 @@
 namespace Lsl50\Repository;
 
 use PDO;
+use SqlDialect;
 use Throwable;
 
 final class LineupRepository
@@ -13,7 +14,7 @@ final class LineupRepository
 
   public function forGame(int $gameId): array
   {
-    $stmt = $this->pdo->prepare("SELECT gl.*, p.first_name || ' ' || p.last_name player_name, p.number, t.name team_name,
+    $stmt = $this->pdo->prepare("SELECT gl.*, " . lsl_sql_full_name("p") . " player_name, p.number, t.name team_name,
         ot.name borrowed_from_team_name
       FROM game_lineups gl
       JOIN players p ON p.id=gl.player_id
@@ -47,10 +48,7 @@ final class LineupRepository
             ->execute([$gameId, $teamId, $battingOrder]);
           continue;
         }
-        $this->pdo->prepare("INSERT INTO game_lineups (season_id,game_id,team_id,batting_order,player_id,field_position,active,updated_at)
-          VALUES (?,?,?,?,?,?,1,CURRENT_TIMESTAMP)
-          ON CONFLICT(game_id, team_id, batting_order) DO UPDATE SET player_id=excluded.player_id, field_position=excluded.field_position, active=1, updated_at=CURRENT_TIMESTAMP")
-          ->execute([$seasonId, $gameId, $teamId, $battingOrder, $playerId, $position]);
+        SqlDialect::upsertLineup($this->pdo, $seasonId, $gameId, $teamId, $battingOrder, $playerId, $position);
         $saved++;
       }
       $this->pdo->commit();

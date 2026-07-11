@@ -1,0 +1,28 @@
+<?php
+/** API v1 bootstrap — JSON helpers + CORS */
+header("Content-Type: application/json; charset=utf-8");
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, X-LSL50-Key");
+
+if (($_SERVER["REQUEST_METHOD"] ?? "GET") === "OPTIONS") {
+  http_response_code(204);
+  exit;
+}
+
+require_once __DIR__ . "/../../config.php";
+require_once __DIR__ . "/../../src/autoload.php";
+
+function api_v1_json(array $payload, int $code = 200): void
+{
+  http_response_code($code);
+  echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+  exit;
+}
+
+function api_v1_season(PDO $pdo): array
+{
+  $season = active_season($pdo);
+  return ["id" => (int)$season["id"], "name" => $season["name"] ?? ""];
+}

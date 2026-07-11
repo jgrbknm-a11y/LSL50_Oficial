@@ -17,7 +17,7 @@ function create_player_for_team(PDO $pdo, int $teamId, array $player): void {
     trim($player['position'] ?? ''),
   ]);
   $id = (int)$pdo->lastInsertId();
-  $pdo->prepare("INSERT OR IGNORE INTO player_stats (player_id) VALUES (?)")->execute([$id]);
+  SqlDialect::insertIgnore($pdo, "player_stats", ["player_id"], [$id]);
 }
 
 if ($_SERVER['REQUEST_METHOD']==='POST') {

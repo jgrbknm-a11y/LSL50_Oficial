@@ -19,7 +19,7 @@ try {
       p.id,
       p.number,
       p.birth_date,
-      p.first_name || ' ' || p.last_name AS name,
+      " . lsl_sql_full_name("p") . " AS name,
       COALESCE(t.name, 'Sin equipo') AS team,
       COALESCE(ps.games_played, 0) AS games_played,
       COALESCE(ps.AVG, 0) AS avg,
@@ -28,7 +28,7 @@ try {
     FROM players p
     LEFT JOIN teams t ON t.id = p.team_id
     LEFT JOIN player_stats ps ON ps.player_id = p.id
-    ORDER BY t.name, CAST(NULLIF(p.number, '') AS INTEGER), p.last_name, p.first_name
+    ORDER BY t.name, " . SqlDialect::orderByUniformNumber("p") . ", p.last_name, p.first_name
   ")->fetchAll();
 
   if ($postseasonOnly) {

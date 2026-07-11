@@ -8,6 +8,8 @@ $DB_FILE = $DATA_DIR . "/lsl50_local.sqlite";
 $PROJECT_ROOT = dirname($ROOT_DIR);
 
 require_once $ROOT_DIR . "/src/Support/Env.php";
+require_once $ROOT_DIR . "/src/Support/SqlDialect.php";
+require_once $ROOT_DIR . "/src/Support/Database.php";
 require_once $ROOT_DIR . "/src/Auth/AdminAuth.php";
 
 lsl_load_env_files([
@@ -20,17 +22,7 @@ if (!is_dir($DATA_DIR)) mkdir($DATA_DIR, 0775, true);
 if (!is_dir($UPLOAD_DIR)) mkdir($UPLOAD_DIR, 0775, true);
 
 function db(): PDO {
-  static $pdo = null;
-  global $DB_FILE;
-  if ($pdo instanceof PDO) return $pdo;
-
-  $pdo = new PDO("sqlite:" . $DB_FILE);
-  $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-  $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-  $pdo->exec("PRAGMA foreign_keys = ON");
-  $pdo->exec("PRAGMA busy_timeout = 5000");
-  init_local_db($pdo);
-  return $pdo;
+  return Database::connect();
 }
 
 function init_local_db(PDO $pdo): void {
@@ -312,6 +304,7 @@ function init_local_db(PDO $pdo): void {
   ensure_column($pdo, "games", "completed_innings", "INTEGER DEFAULT 0");
   ensure_column($pdo, "games", "started_at", "TEXT");
   ensure_column($pdo, "games", "ended_at", "TEXT");
+  ensure_column($pdo, "games", "youtube_video_id", "TEXT");
   ensure_column($pdo, "game_play_events", "season_id", "INTEGER");
   ensure_column($pdo, "game_play_events", "out_detail", "TEXT");
   ensure_column($pdo, "game_lineups", "season_id", "INTEGER");
@@ -346,22 +339,13 @@ function init_local_db(PDO $pdo): void {
     foreach ($teams as $team) {
       $stmt->execute([$team[0], $team[1], $team[2], "Equipo activo de Legends Softball League 50+."]);
       $teamId = (int)$pdo->lastInsertId();
-      $pdo->prepare("INSERT INTO team_stats (team_id) VALUES (?)")->execute([$teamId]);
+      SqlDialect::insertIgnore($pdo, "team_stats", ["team_id"], [$teamId]);
     }
   }
 }
 
 function ensure_column(PDO $pdo, string $table, string $column, string $definition): void {
-  $columns = $pdo->query("PRAGMA table_info($table)")->fetchAll();
-  foreach ($columns as $col) {
-    if (($col["name"] ?? "") === $column) return;
-  }
-  try {
-    $pdo->exec("ALTER TABLE $table ADD COLUMN $column $definition");
-  } catch (Throwable $e) {
-    $message = strtolower($e->getMessage());
-    if (!str_contains($message, "duplicate column")) throw $e;
-  }
+  SqlDialect::ensureColumn($pdo, $table, $column, $definition);
 }
 
 function active_season(PDO $pdo = null): array {
@@ -388,7 +372,7 @@ function archive_and_start_season(PDO $pdo, string $nextName, string $nextStart,
     "game_player_stats" => $pdo->query("SELECT * FROM game_player_stats WHERE COALESCE(season_id, $seasonId) = $seasonId ORDER BY game_id, player_id")->fetchAll(),
     "game_play_events" => $pdo->query("SELECT * FROM game_play_events WHERE COALESCE(season_id, $seasonId) = $seasonId ORDER BY game_id, inning, id")->fetchAll(),
     "game_lineups" => $pdo->query("SELECT * FROM game_lineups WHERE COALESCE(season_id, $seasonId) = $seasonId ORDER BY game_id, team_id, batting_order")->fetchAll(),
-    "player_stats" => $pdo->query("SELECT ps.*, p.first_name || ' ' || p.last_name player_name FROM player_stats ps JOIN players p ON p.id=ps.player_id ORDER BY p.last_name, p.first_name")->fetchAll(),
+    "player_stats" => $pdo->query("SELECT ps.*, " . lsl_sql_full_name("p") . " player_name FROM player_stats ps JOIN players p ON p.id=ps.player_id ORDER BY p.last_name, p.first_name")->fetchAll(),
     "team_stats" => $pdo->query("SELECT ts.*, t.name team_name FROM team_stats ts JOIN teams t ON t.id=ts.team_id ORDER BY t.name")->fetchAll(),
   ];
 
@@ -413,12 +397,14 @@ function archive_and_start_season(PDO $pdo, string $nextName, string $nextStart,
       $pdo->exec("DELETE FROM players");
     } else {
       $playerIds = $pdo->query("SELECT id FROM players")->fetchAll();
-      $stmt = $pdo->prepare("INSERT OR IGNORE INTO player_stats (player_id) VALUES (?)");
-      foreach ($playerIds as $row) $stmt->execute([(int)$row["id"]]);
+      foreach ($playerIds as $row) {
+        SqlDialect::insertIgnore($pdo, "player_stats", ["player_id"], [(int)$row["id"]]);
+      }
     }
     $teamIds = $pdo->query("SELECT id FROM teams")->fetchAll();
-    $stmt = $pdo->prepare("INSERT OR IGNORE INTO team_stats (team_id) VALUES (?)");
-    foreach ($teamIds as $row) $stmt->execute([(int)$row["id"]]);
+    foreach ($teamIds as $row) {
+      SqlDialect::insertIgnore($pdo, "team_stats", ["team_id"], [(int)$row["id"]]);
+    }
 
     $pdo->commit();
   } catch (Throwable $e) {
@@ -453,7 +439,8 @@ function postseason_eligible(array $player): bool {
 
 function lsl_setting(PDO $pdo, string $key, string $default = ""): string {
   try {
-    $stmt = $pdo->prepare("SELECT value FROM app_settings WHERE key=?");
+    $keyCol = lsl_db_driver($pdo) === "mysql" ? "`key`" : "key";
+    $stmt = $pdo->prepare("SELECT value FROM app_settings WHERE {$keyCol}=?");
     $stmt->execute([$key]);
     $value = $stmt->fetchColumn();
     return $value !== false ? (string)$value : $default;
@@ -463,9 +450,7 @@ function lsl_setting(PDO $pdo, string $key, string $default = ""): string {
 }
 
 function lsl_set_setting(PDO $pdo, string $key, string $value): void {
-  $pdo->prepare("INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, CURRENT_TIMESTAMP)
-    ON CONFLICT(key) DO UPDATE SET value=excluded.value, updated_at=CURRENT_TIMESTAMP")
-    ->execute([$key, $value]);
+  SqlDialect::upsertAppSetting($pdo, $key, $value);
 }
 
 function lsl_scorer_pin(PDO $pdo = null): string {
@@ -505,18 +490,38 @@ function lsl_recalc_player_stats(PDO $pdo, int $playerId, int $seasonId): void {
   $OBP = $OBP_DEN > 0 ? round(($H + $BB + $HBP) / $OBP_DEN, 3) : 0;
   $SLG = $AB > 0 ? round($TB / $AB, 3) : 0;
 
-  $pdo->prepare("INSERT INTO player_stats (player_id,games_played,AB,H,dbl,tpl,TB,R,RBI,HR,BB,SO,SB,HBP,SH,SF,E,AVG,OBP,SLG)
-    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-    ON CONFLICT(player_id) DO UPDATE SET games_played=excluded.games_played, AB=excluded.AB, H=excluded.H, dbl=excluded.dbl, tpl=excluded.tpl, TB=excluded.TB, R=excluded.R, RBI=excluded.RBI, HR=excluded.HR, BB=excluded.BB, SO=excluded.SO, SB=excluded.SB, HBP=excluded.HBP, SH=excluded.SH, SF=excluded.SF, E=excluded.E, AVG=excluded.AVG, OBP=excluded.OBP, SLG=excluded.SLG, updated_at=CURRENT_TIMESTAMP")
-    ->execute([$playerId, (int)$row["GP"], $AB, $H, $DBL, $TPL, $TB, (int)$row["R"], (int)$row["RBI"], $HR, $BB, (int)$row["SO"], (int)$row["SB"], $HBP, $SH, $SF, $E, $AVG, $OBP, $SLG]);
+  SqlDialect::upsertPlayerStats(
+    $pdo,
+    $playerId,
+    (int)$row["GP"],
+    $AB,
+    $H,
+    $DBL,
+    $TPL,
+    $TB,
+    (int)$row["R"],
+    (int)$row["RBI"],
+    $HR,
+    $BB,
+    (int)$row["SO"],
+    (int)$row["SB"],
+    $HBP,
+    $SH,
+    $SF,
+    $E,
+    $AVG,
+    $OBP,
+    $SLG
+  );
 }
 
 function lsl_recalc_team_stats(PDO $pdo, int $seasonId): void {
   $seasonId = (int)$seasonId;
   $pdo->exec("UPDATE team_stats SET wins=0, losses=0, ties=0, runs_for=0, runs_against=0, updated_at=CURRENT_TIMESTAMP");
   $teamIds = $pdo->query("SELECT id FROM teams")->fetchAll();
-  $ensure = $pdo->prepare("INSERT OR IGNORE INTO team_stats (team_id,wins,losses,ties,runs_for,runs_against) VALUES (?,0,0,0,0,0)");
-  foreach ($teamIds as $team) $ensure->execute([(int)$team["id"]]);
+  foreach ($teamIds as $team) {
+    SqlDialect::insertIgnore($pdo, "team_stats", ["team_id", "wins", "losses", "ties", "runs_for", "runs_against"], [(int)$team["id"], 0, 0, 0, 0, 0]);
+  }
 
   $games = $pdo->query("SELECT * FROM games g
     WHERE COALESCE(g.season_id, $seasonId) = $seasonId

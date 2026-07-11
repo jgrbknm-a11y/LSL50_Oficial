@@ -1,0 +1,290 @@
+-- LSL50 Unified Schema — MySQL 8+
+-- Apply: mysql -u lsl50 -p lsl50 < docs/schema-mysql.sql
+-- Or: php LSL50_Website_System/tools/bootstrap_mysql.php
+
+SET NAMES utf8mb4;
+SET FOREIGN_KEY_CHECKS = 0;
+
+CREATE TABLE IF NOT EXISTS seasons (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  starts_at DATE NULL,
+  ends_at DATE NULL,
+  status VARCHAR(32) NOT NULL DEFAULT 'active',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  archived_at DATETIME NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS season_archives (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  season_id INT UNSIGNED NOT NULL,
+  season_name VARCHAR(120) NOT NULL,
+  snapshot_json LONGTEXT NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_season_archives_season FOREIGN KEY (season_id) REFERENCES seasons(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS users (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(190) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  role VARCHAR(32) NOT NULL DEFAULT 'admin',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS teams (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  slug VARCHAR(120) UNIQUE,
+  city VARCHAR(120) NULL,
+  logo_url TEXT NULL,
+  cover_url TEXT NULL,
+  description TEXT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS players (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  team_id INT UNSIGNED NULL,
+  first_name VARCHAR(80) NOT NULL,
+  last_name VARCHAR(80) NOT NULL,
+  birth_date DATE NULL,
+  number VARCHAR(8) NULL,
+  position VARCHAR(32) NULL,
+  photo_url TEXT NULL,
+  bio TEXT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_players_team FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS games (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  season_id INT UNSIGNED NULL,
+  home_team_id INT UNSIGNED NOT NULL,
+  away_team_id INT UNSIGNED NOT NULL,
+  game_date DATE NOT NULL,
+  location VARCHAR(190) NULL,
+  final_home INT DEFAULT 0,
+  final_away INT DEFAULT 0,
+  winning_pitcher_id INT UNSIGNED NULL,
+  status VARCHAR(32) DEFAULT 'scheduled',
+  result_type VARCHAR(32) DEFAULT 'pending',
+  official_result_note TEXT NULL,
+  forfeit_winner_team_id INT UNSIGNED NULL,
+  forfeit_loser_team_id INT UNSIGNED NULL,
+  is_legal_game TINYINT(1) DEFAULT 0,
+  completed_innings INT DEFAULT 0,
+  started_at DATETIME NULL,
+  ended_at DATETIME NULL,
+  youtube_video_id VARCHAR(32) NULL,
+  notes TEXT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_games_home FOREIGN KEY (home_team_id) REFERENCES teams(id) ON DELETE CASCADE,
+  CONSTRAINT fk_games_away FOREIGN KEY (away_team_id) REFERENCES teams(id) ON DELETE CASCADE,
+  CONSTRAINT fk_games_season FOREIGN KEY (season_id) REFERENCES seasons(id) ON DELETE SET NULL,
+  CONSTRAINT fk_games_wp FOREIGN KEY (winning_pitcher_id) REFERENCES players(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS schedule_entries (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  season_id INT UNSIGNED NOT NULL,
+  stage VARCHAR(64) NOT NULL,
+  round_no INT NOT NULL DEFAULT 0,
+  game_no INT NOT NULL DEFAULT 0,
+  game_date DATE NOT NULL,
+  game_time VARCHAR(16) NOT NULL,
+  field VARCHAR(120) NULL,
+  home_team_id INT UNSIGNED NULL,
+  away_team_id INT UNSIGNED NULL,
+  home_label VARCHAR(120) NULL,
+  away_label VARCHAR(120) NULL,
+  notes TEXT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_schedule_season FOREIGN KEY (season_id) REFERENCES seasons(id) ON DELETE CASCADE,
+  CONSTRAINT fk_schedule_home FOREIGN KEY (home_team_id) REFERENCES teams(id) ON DELETE SET NULL,
+  CONSTRAINT fk_schedule_away FOREIGN KEY (away_team_id) REFERENCES teams(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS game_player_stats (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  season_id INT UNSIGNED NULL,
+  game_id INT UNSIGNED NOT NULL,
+  team_id INT UNSIGNED NOT NULL,
+  player_id INT UNSIGNED NOT NULL,
+  AB INT DEFAULT 0,
+  H INT DEFAULT 0,
+  dbl INT DEFAULT 0,
+  tpl INT DEFAULT 0,
+  R INT DEFAULT 0,
+  RBI INT DEFAULT 0,
+  HR INT DEFAULT 0,
+  BB INT DEFAULT 0,
+  SO INT DEFAULT 0,
+  SB INT DEFAULT 0,
+  HBP INT DEFAULT 0,
+  SH INT DEFAULT 0,
+  SF INT DEFAULT 0,
+  E INT DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_gps_game_player (game_id, player_id),
+  CONSTRAINT fk_gps_game FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
+  CONSTRAINT fk_gps_team FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+  CONSTRAINT fk_gps_player FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS game_play_events (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  season_id INT UNSIGNED NULL,
+  game_id INT UNSIGNED NOT NULL,
+  inning INT NOT NULL DEFAULT 1,
+  half VARCHAR(8) NOT NULL DEFAULT 'top',
+  batting_team_id INT UNSIGNED NOT NULL,
+  batter_id INT UNSIGNED NOT NULL,
+  result VARCHAR(32) NOT NULL,
+  batter_to VARCHAR(16) NULL,
+  runner_1b_id INT UNSIGNED NULL,
+  runner_1b_to VARCHAR(16) NULL,
+  runner_2b_id INT UNSIGNED NULL,
+  runner_2b_to VARCHAR(16) NULL,
+  runner_3b_id INT UNSIGNED NULL,
+  runner_3b_to VARCHAR(16) NULL,
+  outs_on_play INT DEFAULT 0,
+  out_detail VARCHAR(64) NULL,
+  rbi INT DEFAULT 0,
+  runs_scored INT DEFAULT 0,
+  notes TEXT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_gpe_game FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
+  CONSTRAINT fk_gpe_batting FOREIGN KEY (batting_team_id) REFERENCES teams(id) ON DELETE CASCADE,
+  CONSTRAINT fk_gpe_batter FOREIGN KEY (batter_id) REFERENCES players(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS game_lineups (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  season_id INT UNSIGNED NULL,
+  game_id INT UNSIGNED NOT NULL,
+  team_id INT UNSIGNED NOT NULL,
+  batting_order INT NOT NULL,
+  player_id INT UNSIGNED NOT NULL,
+  field_position VARCHAR(16) NULL,
+  active TINYINT(1) DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_lineup_slot (game_id, team_id, batting_order),
+  CONSTRAINT fk_gl_game FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
+  CONSTRAINT fk_gl_team FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+  CONSTRAINT fk_gl_player FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS game_borrowed_players (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  season_id INT UNSIGNED NULL,
+  game_id INT UNSIGNED NOT NULL,
+  player_id INT UNSIGNED NOT NULL,
+  original_team_id INT UNSIGNED NULL,
+  borrowed_team_id INT UNSIGNED NOT NULL,
+  reason TEXT NULL,
+  approved_by VARCHAR(120) NULL,
+  active TINYINT(1) DEFAULT 1,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_borrowed (game_id, player_id, borrowed_team_id),
+  CONSTRAINT fk_gbp_game FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE,
+  CONSTRAINT fk_gbp_player FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS player_stats (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  player_id INT UNSIGNED NOT NULL UNIQUE,
+  games_played INT DEFAULT 0,
+  AB INT DEFAULT 0,
+  H INT DEFAULT 0,
+  dbl INT DEFAULT 0,
+  tpl INT DEFAULT 0,
+  TB INT DEFAULT 0,
+  R INT DEFAULT 0,
+  RBI INT DEFAULT 0,
+  HR INT DEFAULT 0,
+  BB INT DEFAULT 0,
+  SO INT DEFAULT 0,
+  SB INT DEFAULT 0,
+  HBP INT DEFAULT 0,
+  SH INT DEFAULT 0,
+  SF INT DEFAULT 0,
+  E INT DEFAULT 0,
+  AVG DECIMAL(6,3) DEFAULT 0.000,
+  OBP DECIMAL(6,3) DEFAULT 0.000,
+  SLG DECIMAL(6,3) DEFAULT 0.000,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_ps_player FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS team_stats (
+  team_id INT UNSIGNED PRIMARY KEY,
+  wins INT DEFAULT 0,
+  losses INT DEFAULT 0,
+  ties INT DEFAULT 0,
+  runs_for INT DEFAULT 0,
+  runs_against INT DEFAULT 0,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_ts_team FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS media (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  type VARCHAR(32) NOT NULL,
+  title VARCHAR(190) NOT NULL,
+  url TEXT NOT NULL,
+  thumbnail_url TEXT NULL,
+  featured TINYINT(1) DEFAULT 0,
+  week_start DATE NULL,
+  week_end DATE NULL,
+  tags TEXT NULL,
+  order_index INT DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS ai_game_notes (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  season_id INT UNSIGNED NOT NULL,
+  game_id INT UNSIGNED NOT NULL UNIQUE,
+  status VARCHAR(32) NOT NULL DEFAULT 'draft',
+  title VARCHAR(255) NOT NULL,
+  summary TEXT NULL,
+  body LONGTEXT NOT NULL,
+  video_url TEXT NULL,
+  clip_start_seconds INT DEFAULT 0,
+  clip_end_seconds INT DEFAULT 45,
+  highlight_reason TEXT NULL,
+  provider VARCHAR(32) DEFAULT 'local',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  published_at DATETIME NULL,
+  CONSTRAINT fk_aign_season FOREIGN KEY (season_id) REFERENCES seasons(id) ON DELETE CASCADE,
+  CONSTRAINT fk_aign_game FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS weekly_awards (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  week_start DATE NOT NULL,
+  week_end DATE NOT NULL,
+  player_id INT UNSIGNED NULL,
+  team_id INT UNSIGNED NULL,
+  award_type VARCHAR(64) NOT NULL,
+  description TEXT NULL,
+  media_url TEXT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS app_settings (
+  `key` VARCHAR(64) PRIMARY KEY,
+  value TEXT NOT NULL,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE INDEX idx_gps_game ON game_player_stats(game_id);
+CREATE INDEX idx_gps_player ON game_player_stats(player_id);
+CREATE INDEX idx_games_season ON games(season_id);
+CREATE INDEX idx_games_status ON games(status, result_type);
+CREATE INDEX idx_gpe_game ON game_play_events(game_id, inning, id);
+
+SET FOREIGN_KEY_CHECKS = 1;

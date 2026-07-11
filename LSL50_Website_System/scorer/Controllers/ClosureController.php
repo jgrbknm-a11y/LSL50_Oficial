@@ -5,6 +5,7 @@ namespace Lsl50\Scorer\Controllers;
 use Lsl50\Domain\Rules\GameClosure;
 use Lsl50\Repository\BoxScoreRepository;
 use Lsl50\Repository\GameRepository;
+use Lsl50\Services\GameClosurePipeline;
 use PDO;
 
 final class ClosureController
@@ -69,10 +70,19 @@ final class ClosureController
         trim(post("official_result_note")),
         $endedAt
       );
-      lsl_recalc_team_stats($this->pdo, $this->seasonId);
-      $_SESSION["scorer_message"] = $resultType === "pending"
-        ? "Juego reabierto para corrección"
-        : "Juego cerrado y estadísticas guardadas. Selecciona el próximo juego abierto.";
+      if ($resultType === "pending") {
+        lsl_recalc_team_stats($this->pdo, $this->seasonId);
+        $_SESSION["scorer_message"] = "Juego reabierto para corrección";
+      } else {
+        $pipeline = GameClosurePipeline::afterGameClosed($this->pdo, $this->seasonId, $gameId, $resultType);
+        $msg = "Juego cerrado y estadísticas guardadas. Selecciona el próximo juego abierto.";
+        if (!empty($pipeline["ai"]["ok"])) {
+          $msg .= ($pipeline["ai"]["status"] ?? "") === "published"
+            ? " Crónica IA publicada automáticamente."
+            : " Borrador IA generado en Publicador IA.";
+        }
+        $_SESSION["scorer_message"] = $msg;
+      }
     }
     if (($resultType ?? "pending") === "pending") {
       header("Location: /scorer/?game_id=" . $gameId . "&view=lineups#officialValidation");

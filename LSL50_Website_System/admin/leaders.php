@@ -26,7 +26,7 @@ function offensive_leaders(PDO $pdo, string $expression, string $where, string $
         AND EXISTS (SELECT 1 FROM game_player_stats gps WHERE gps.game_id=g.id)
     )";
   }
-  $sql = "SELECT p.id, p.number, p.first_name || ' ' || p.last_name player_name, t.name team_name,
+  $sql = "SELECT p.id, p.number, " . lsl_sql_full_name("p") . " player_name, t.name team_name,
       ps.games_played, ps.AB, ps.H, ps.dbl, ps.tpl, ps.HR, ps.RBI, ps.BB, ps.HBP, ps.SH, ps.SF, ps.E, (ps.AB + ps.BB + ps.HBP + ps.SH + ps.SF) PA, $expression AS leader_value
     FROM player_stats ps
     JOIN players p ON p.id=ps.player_id
@@ -79,7 +79,7 @@ $featuredDepartments = [
   ["title" => "Más anotadas", "abbr" => "R", "expr" => "ps.R", "where" => "ps.R > 0", "order" => "ps.R DESC", "type" => "int"],
 ];
 
-$pitcherLeaders = $pdo->query("SELECT p.id, p.number, p.first_name || ' ' || p.last_name player_name, t.name team_name, COUNT(*) wins
+$pitcherLeaders = $pdo->query("SELECT p.id, p.number, " . lsl_sql_full_name("p") . " player_name, t.name team_name, COUNT(*) wins
   FROM games g
   JOIN players p ON p.id=g.winning_pitcher_id
   LEFT JOIN teams t ON t.id=p.team_id
@@ -90,7 +90,7 @@ $pitcherLeaders = $pdo->query("SELECT p.id, p.number, p.first_name || ' ' || p.l
   ORDER BY wins DESC, p.last_name, p.first_name
   LIMIT 10")->fetchAll();
 
-$allBatters = $pdo->query("SELECT p.id, p.number, p.first_name || ' ' || p.last_name player_name, t.name team_name,
+$allBatters = $pdo->query("SELECT p.id, p.number, " . lsl_sql_full_name("p") . " player_name, t.name team_name,
     ps.games_played, ps.AB, ps.R, ps.H, ps.dbl, ps.tpl, ps.HR, ps.TB, ps.RBI, ps.BB, ps.SO, ps.SB, ps.HBP, ps.SH, ps.SF, ps.E,
     ps.AVG, ps.OBP, ps.SLG, (ps.OBP + ps.SLG) OPS, (ps.AB + ps.BB + ps.HBP + ps.SH + ps.SF) PA,
     (

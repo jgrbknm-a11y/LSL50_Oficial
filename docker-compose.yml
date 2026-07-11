@@ -1,0 +1,23 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: lsl50-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: lsl50
+      MYSQL_USER: lsl50
+      MYSQL_PASSWORD: lsl50
+    ports:
+      - "3306:3306"
+    volumes:
+      - lsl50_mysql_data:/var/lib/mysql
+      - ./docs/schema-mysql.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  lsl50_mysql_data:

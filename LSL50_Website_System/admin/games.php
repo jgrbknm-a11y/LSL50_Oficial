@@ -60,6 +60,14 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
       VALUES (?,?,?,?,?,?,?,?)")->execute([$seasonId, post('home_team_id'), post('away_team_id'), post('game_date'), post('location'), post('final_home')?:0, post('final_away')?:0, post('notes')]);
     flash("Juego creado"); header("Location: /admin/games.php"); exit;
   }
+  if (post('action')==='save_youtube') {
+    $gid = (int)post('game_id');
+    $yt = trim((string)post('youtube_video_id'));
+    $pdo->prepare("UPDATE games SET youtube_video_id=? WHERE id=? AND COALESCE(season_id, ?)=?")
+      ->execute([$yt !== '' ? $yt : null, $gid, $seasonId, $seasonId]);
+    flash("ID de video YouTube guardado para el juego.");
+    header("Location: /admin/games.php?tab=scorer&game_id=".$gid); exit;
+  }
   if (post('action')==='save_box') {
     $game_id = (int)post('game_id');
     $postedRows = $_POST["rows"] ?? null;
@@ -79,7 +87,7 @@ $games = $pdo->query("SELECT g.*, ht.name home_name, at.name away_name
   WHERE COALESCE(g.season_id, $seasonId) = $seasonId
   ORDER BY g.game_date DESC, g.id DESC LIMIT 50")->fetchAll();
 
-$players_all = $pdo->query("SELECT p.id, p.first_name || ' ' || p.last_name name, p.team_id, t.name team_name, p.number
+$players_all = $pdo->query("SELECT p.id, " . lsl_sql_full_name("p") . " name, p.team_id, t.name team_name, p.number
   FROM players p LEFT JOIN teams t ON t.id=p.team_id ORDER BY t.name, p.last_name")->fetchAll();
 
 $nextSchedule = $pdo->prepare("SELECT MIN(game_date) next_date FROM schedule_entries WHERE season_id=? AND stage='Regular'");
@@ -152,7 +160,7 @@ include __DIR__ . "/../partials/header.php"; ?>
   <h2 class="text-xl font-semibold mb-2">Anotación: <?= h($game['home_name']) ?> vs <?= h($game['away_name']) ?> (<?= h($game['game_date']) ?>)</h2>
   <?php
     $rowsByPlayer = [];
-    $savedStmt = $pdo->prepare("SELECT gps.*, p.first_name || ' ' || p.last_name player_name, p.number, t.name team_name
+    $savedStmt = $pdo->prepare("SELECT gps.*, " . lsl_sql_full_name("p") . " player_name, p.number, t.name team_name
       FROM game_player_stats gps
       JOIN players p ON p.id=gps.player_id
       JOIN teams t ON t.id=gps.team_id
@@ -163,7 +171,7 @@ include __DIR__ . "/../partials/header.php"; ?>
       $rowsByPlayer[(int)$row["player_id"]] = $row;
     }
 
-    $rosterStmt = $pdo->prepare("SELECT p.id player_id, p.team_id, p.number, p.first_name || ' ' || p.last_name player_name, t.name team_name
+    $rosterStmt = $pdo->prepare("SELECT p.id player_id, p.team_id, p.number, " . lsl_sql_full_name("p") . " player_name, t.name team_name
       FROM players p JOIN teams t ON t.id=p.team_id
       WHERE p.team_id IN (?, ?)
       ORDER BY CASE WHEN p.team_id=? THEN 0 ELSE 1 END, CAST(NULLIF(p.number, '') AS INTEGER), p.last_name, p.first_name");
@@ -192,6 +200,16 @@ include __DIR__ . "/../partials/header.php"; ?>
     $extraPlayers = array_values(array_filter($players_all, fn($p) => !in_array((int)$p["id"], array_map(fn($r) => (int)$r["player_id"], $scorerRows), true)));
     $pitcherOptions = array_values(array_filter($scorerRows, fn($row) => (int)($row["team_id"] ?? 0) === (int)$game["home_team_id"] || (int)($row["team_id"] ?? 0) === (int)$game["away_team_id"]));
   ?>
+    <div class="card" style="margin-bottom:12px">
+      <label class="block mb-1">Transmisión YouTube (ID o URL)</label>
+      <form method="post" class="flex gap-2 items-end" action="/admin/games.php?tab=scorer&game_id=<?= (int)$gid ?>">
+        <input type="hidden" name="action" value="save_youtube"/>
+        <input type="hidden" name="game_id" value="<?= (int)$gid ?>"/>
+        <input name="youtube_video_id" class="w-full" placeholder="dQw4w9WgXcQ o https://youtube.com/watch?v=..." value="<?= h($game['youtube_video_id'] ?? '') ?>"/>
+        <button class="btn">Guardar video</button>
+      </form>
+      <div class="small mt-2">Se incrusta automáticamente en la crónica IA al cerrar el juego.</div>
+    </div>
   <form method="post" id="boxForm">
     <input type="hidden" name="action" value="save_box"/>
     <input type="hidden" name="game_id" value="<?= (int)$gid ?>"/>

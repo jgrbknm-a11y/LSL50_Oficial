@@ -3,6 +3,7 @@
 namespace Lsl50\Repository;
 
 use PDO;
+use SqlDialect;
 
 final class RosterRepository
 {
@@ -13,7 +14,7 @@ final class RosterRepository
   public function rowsForGame(array $game): array
   {
     $rowsByPlayer = [];
-    $saved = $this->pdo->prepare("SELECT gps.*, p.first_name || ' ' || p.last_name player_name, p.number, t.name team_name
+    $saved = $this->pdo->prepare("SELECT gps.*, " . lsl_sql_full_name("p") . " player_name, p.number, t.name team_name
       FROM game_player_stats gps
       JOIN players p ON p.id=gps.player_id
       JOIN teams t ON t.id=gps.team_id
@@ -22,11 +23,11 @@ final class RosterRepository
     $saved->execute([(int)$game["id"]]);
     foreach ($saved->fetchAll() as $row) $rowsByPlayer[(int)$row["player_id"]] = $row;
 
-    $roster = $this->pdo->prepare("SELECT p.id player_id, p.team_id, p.number, p.first_name || ' ' || p.last_name player_name, t.name team_name
+    $roster = $this->pdo->prepare("SELECT p.id player_id, p.team_id, p.number, " . lsl_sql_full_name("p") . " player_name, t.name team_name
       FROM players p
       JOIN teams t ON t.id=p.team_id
       WHERE p.team_id IN (?, ?)
-      ORDER BY CASE WHEN p.team_id=? THEN 0 ELSE 1 END, CAST(NULLIF(p.number, '') AS INTEGER), p.last_name, p.first_name");
+      ORDER BY CASE WHEN p.team_id=? THEN 0 ELSE 1 END, " . SqlDialect::orderByUniformNumber("p") . ", p.last_name, p.first_name");
     $roster->execute([(int)$game["home_team_id"], (int)$game["away_team_id"], (int)$game["home_team_id"]]);
 
     $rows = [];
@@ -44,7 +45,7 @@ final class RosterRepository
     }
 
     $borrowed = $this->pdo->prepare("SELECT gbp.player_id, gbp.borrowed_team_id team_id, gbp.original_team_id,
-        p.number, p.first_name || ' ' || p.last_name player_name,
+        p.number, " . lsl_sql_full_name("p") . " player_name,
         bt.name team_name, ot.name original_team_name, gbp.reason
       FROM game_borrowed_players gbp
       JOIN players p ON p.id=gbp.player_id
@@ -74,7 +75,7 @@ final class RosterRepository
 
   public function borrowedPlayers(int $gameId): array
   {
-    $stmt = $this->pdo->prepare("SELECT gbp.*, p.first_name || ' ' || p.last_name player_name, p.number,
+    $stmt = $this->pdo->prepare("SELECT gbp.*, " . lsl_sql_full_name("p") . " player_name, p.number,
         ot.name original_team_name, bt.name borrowed_team_name
       FROM game_borrowed_players gbp
       JOIN players p ON p.id=gbp.player_id
@@ -88,7 +89,7 @@ final class RosterRepository
 
   public function borrowablePool(array $game): array
   {
-    $stmt = $this->pdo->prepare("SELECT p.id player_id, p.team_id, p.number, p.first_name || ' ' || p.last_name player_name, t.name team_name
+    $stmt = $this->pdo->prepare("SELECT p.id player_id, p.team_id, p.number, " . lsl_sql_full_name("p") . " player_name, t.name team_name
       FROM players p
       LEFT JOIN teams t ON t.id=p.team_id
       WHERE p.team_id IS NOT NULL AND p.team_id NOT IN (?, ?)
@@ -131,18 +132,16 @@ final class RosterRepository
     string $reason,
     string $approvedBy
   ): void {
-    $this->pdo->prepare("INSERT INTO game_borrowed_players (season_id,game_id,player_id,original_team_id,borrowed_team_id,reason,approved_by,active)
-      VALUES (?,?,?,?,?,?,?,1)
-      ON CONFLICT(game_id, player_id, borrowed_team_id) DO UPDATE SET active=1, reason=excluded.reason, approved_by=excluded.approved_by")
-      ->execute([
-        $seasonId,
-        $gameId,
-        $playerId,
-        $originalTeamId,
-        $borrowedTeamId,
-        $reason,
-        $approvedBy,
-      ]);
+    SqlDialect::upsertBorrowedPlayer(
+      $this->pdo,
+      $seasonId,
+      $gameId,
+      $playerId,
+      $originalTeamId,
+      $borrowedTeamId,
+      $reason,
+      $approvedBy
+    );
   }
 
   public function deactivateBorrowed(int $borrowedId, int $gameId): void

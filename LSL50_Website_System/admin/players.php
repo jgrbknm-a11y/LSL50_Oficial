@@ -16,7 +16,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
       $stmt->execute([post('team_id')?:null, post('first_name'), post('last_name'), post('number'), post('position'), $photo]);
     }
     $id=$pdo->lastInsertId();
-    $pdo->prepare("INSERT OR IGNORE INTO player_stats (player_id) VALUES (?)")->execute([$id]);
+    SqlDialect::insertIgnore($pdo, "player_stats", ["player_id"], [(int)$id]);
     flash("Jugador creado");
   } elseif (post('action')==='upload_photo') {
     $playerId = (int)post('id');

@@ -113,7 +113,7 @@ function ai_openai_text_from_response(array $data): string {
 
 function ai_game_context(PDO $pdo, int $gameId, int $seasonId): ?array {
   $stmt = $pdo->prepare("SELECT g.*, ht.name home_name, at.name away_name,
-      wp.first_name || ' ' || wp.last_name winning_pitcher_name
+      " . lsl_sql_full_name("wp") . " winning_pitcher_name
     FROM games g
     JOIN teams ht ON ht.id=g.home_team_id
     JOIN teams at ON at.id=g.away_team_id
@@ -123,18 +123,19 @@ function ai_game_context(PDO $pdo, int $gameId, int $seasonId): ?array {
   $game = $stmt->fetch();
   if (!$game) return null;
 
-  $leaders = $pdo->prepare("SELECT p.first_name || ' ' || p.last_name player_name, p.number, t.name team_name,
-      gps.AB, MAX(gps.H, gps.dbl + gps.tpl + gps.HR) H, gps.dbl, gps.tpl, gps.R, gps.RBI, gps.HR, gps.BB, gps.SO, gps.SB, gps.HBP, gps.SH, gps.SF, gps.E,
-      ((MAX(gps.H, gps.dbl + gps.tpl + gps.HR) - (gps.dbl + gps.tpl + gps.HR)) + gps.dbl*2 + gps.tpl*3 + gps.HR*4) TB
+  $hitExpr = SqlDialect::greatest("gps.H", "gps.dbl + gps.tpl + gps.HR");
+  $leaders = $pdo->prepare("SELECT " . lsl_sql_full_name("p") . " player_name, p.number, t.name team_name,
+      gps.AB, {$hitExpr} H, gps.dbl, gps.tpl, gps.R, gps.RBI, gps.HR, gps.BB, gps.SO, gps.SB, gps.HBP, gps.SH, gps.SF, gps.E,
+      (({$hitExpr} - (gps.dbl + gps.tpl + gps.HR)) + gps.dbl*2 + gps.tpl*3 + gps.HR*4) TB
     FROM game_player_stats gps
     JOIN players p ON p.id=gps.player_id
     JOIN teams t ON t.id=gps.team_id
     WHERE gps.game_id=?
-    ORDER BY gps.HR DESC, gps.RBI DESC, MAX(gps.H, gps.dbl + gps.tpl + gps.HR) DESC, TB DESC, gps.R DESC, p.last_name, p.first_name
+    ORDER BY gps.HR DESC, gps.RBI DESC, {$hitExpr} DESC, TB DESC, gps.R DESC, p.last_name, p.first_name
     LIMIT 5");
   $leaders->execute([$gameId]);
 
-  $teamRows = $pdo->prepare("SELECT t.name team_name, SUM(gps.R) runs, SUM(MAX(gps.H, gps.dbl + gps.tpl + gps.HR)) hits, SUM(gps.E) errors, SUM(gps.HR) hrs
+  $teamRows = $pdo->prepare("SELECT t.name team_name, SUM(gps.R) runs, SUM({$hitExpr}) hits, SUM(gps.E) errors, SUM(gps.HR) hrs
     FROM game_player_stats gps
     JOIN teams t ON t.id=gps.team_id
     WHERE gps.game_id=?
@@ -142,10 +143,10 @@ function ai_game_context(PDO $pdo, int $gameId, int $seasonId): ?array {
     ORDER BY t.name");
   $teamRows->execute([$gameId]);
 
-  $plays = $pdo->prepare("SELECT e.*, bt.name batting_team, b.first_name || ' ' || b.last_name batter_name,
-      r1.first_name || ' ' || r1.last_name runner_1b_name,
-      r2.first_name || ' ' || r2.last_name runner_2b_name,
-      r3.first_name || ' ' || r3.last_name runner_3b_name
+  $plays = $pdo->prepare("SELECT e.*, bt.name batting_team, " . lsl_sql_full_name("b") . " batter_name,
+      " . lsl_sql_full_name("r1") . " runner_1b_name,
+      " . lsl_sql_full_name("r2") . " runner_2b_name,
+      " . lsl_sql_full_name("r3") . " runner_3b_name
     FROM game_play_events e
     JOIN teams bt ON bt.id=e.batting_team_id
     JOIN players b ON b.id=e.batter_id
@@ -285,23 +286,11 @@ function ai_build_local_note(array $context, int $clipSeconds): array {
 }
 
 function ai_upsert_note(PDO $pdo, int $seasonId, int $gameId, array $note, string $videoUrl, string $provider): void {
-  $stmt = $pdo->prepare("INSERT INTO ai_game_notes
-      (season_id, game_id, status, title, summary, body, video_url, clip_start_seconds, clip_end_seconds, highlight_reason, provider, updated_at)
-    VALUES (?, ?, 'draft', ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
-    ON CONFLICT(game_id) DO UPDATE SET
-      status='draft',
-      title=excluded.title,
-      summary=excluded.summary,
-      body=excluded.body,
-      video_url=excluded.video_url,
-      clip_start_seconds=excluded.clip_start_seconds,
-      clip_end_seconds=excluded.clip_end_seconds,
-      highlight_reason=excluded.highlight_reason,
-      provider=excluded.provider,
-      updated_at=CURRENT_TIMESTAMP");
-  $stmt->execute([
+  SqlDialect::upsertAiGameNote(
+    $pdo,
     $seasonId,
     $gameId,
+    "draft",
     $note["title"],
     $note["summary"],
     $note["body"],
@@ -310,7 +299,8 @@ function ai_upsert_note(PDO $pdo, int $seasonId, int $gameId, array $note, strin
     (int)$note["clip_end_seconds"],
     $note["highlight_reason"],
     $provider,
-  ]);
+    null
+  );
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {

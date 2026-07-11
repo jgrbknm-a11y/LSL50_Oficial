@@ -3,6 +3,7 @@
 namespace Lsl50\Repository;
 
 use PDO;
+use SqlDialect;
 
 final class PlayEventRepository
 {
@@ -12,10 +13,10 @@ final class PlayEventRepository
 
   public function forGame(int $gameId): array
   {
-    $stmt = $this->pdo->prepare("SELECT e.*, bt.name batting_team, b.first_name || ' ' || b.last_name batter_name,
-        r1.first_name || ' ' || r1.last_name runner_1b_name,
-        r2.first_name || ' ' || r2.last_name runner_2b_name,
-        r3.first_name || ' ' || r3.last_name runner_3b_name
+    $stmt = $this->pdo->prepare("SELECT e.*, bt.name batting_team, " . lsl_sql_full_name("b") . " batter_name,
+        " . lsl_sql_full_name("r1") . " runner_1b_name,
+        " . lsl_sql_full_name("r2") . " runner_2b_name,
+        " . lsl_sql_full_name("r3") . " runner_3b_name
       FROM game_play_events e
       JOIN teams bt ON bt.id=e.batting_team_id
       JOIN players b ON b.id=e.batter_id

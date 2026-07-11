@@ -106,7 +106,7 @@ try {
   ];
 
   if ($batterId > 0) {
-    $stmt = $pdo->prepare("SELECT p.id, p.number, p.first_name || ' ' || p.last_name AS name,
+    $stmt = $pdo->prepare("SELECT p.id, p.number, " . lsl_sql_full_name("p") . " AS name,
         COALESCE(ps.AVG, 0) AS avg, COALESCE(ps.HR, 0) AS hr, COALESCE(ps.RBI, 0) AS rbi, COALESCE(p.photo_url, '') AS photo
       FROM players p
       LEFT JOIN player_stats ps ON ps.player_id = p.id
