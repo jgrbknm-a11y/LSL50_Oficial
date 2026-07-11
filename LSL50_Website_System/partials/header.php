@@ -41,6 +41,7 @@ try { $leagueLogoUrl = lsl_setting(db(), "league_logo_url", ""); } catch (Throwa
         <a href="/admin/scorer.php">Anotador</a>
         <a href="/admin/schedule.php">Calendario</a>
         <a href="/admin/ai-publisher.php">Publicador IA</a>
+        <a href="/admin/settings.php">Configuración</a>
         <a href="/admin/seasons.php">Temporadas</a>
         <a href="/admin/media.php">Media</a>
         <a href="/admin/awards.php">Reconocimientos</a>

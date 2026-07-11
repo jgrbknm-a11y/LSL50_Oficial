@@ -256,7 +256,7 @@ include __DIR__ . "/../partials/header.php";
 ?>
 
 <h1 class="text-2xl font-bold mb-4">Publicador IA</h1>
-<div class="notice">Canal configurado: <strong><?= h($youtubeChannelUrl) ?></strong>. Modo recomendado activo: <strong><?= $publishMode === "auto" ? "Publicación automática" : "Revisión antes de publicar" ?></strong>.</div>
+<div class="notice">Canal configurado: <strong><?= h($youtubeChannelUrl) ?></strong>. Modo recomendado activo: <strong><?= $publishMode === "auto" ? "Publicación automática" : "Revisión antes de publicar" ?></strong>. Auto-generación al cierre: <strong><a href="/admin/settings.php"><?= lsl_setting($pdo, "ai_auto_generate_on_close", "1") === "1" ? "Activa" : "Inactiva" ?></a></strong>.</div>
 <?php flashes(); ?>
 
 <div class="grid md:grid-cols-2 gap-4">

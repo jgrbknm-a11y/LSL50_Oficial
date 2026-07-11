@@ -13,6 +13,7 @@ use Lsl50\Api\V1\ApiSanitizer;
 use Lsl50\Api\V1\LeadersResource;
 use Lsl50\Api\V1\StandingsResource;
 use Lsl50\Services\AiNewsGenerator;
+use Lsl50\Services\AppSettingsService;
 use Lsl50\Services\PublicStatsService;
 use Lsl50\Services\StatsEngine;
 
@@ -60,6 +61,22 @@ $pitchWins = StatsEngine::pitcherWinLeaders($pdo, $seasonId, 5);
 assert_public(is_array($pitchWins), "pitcherWinLeaders returns array");
 
 assert_public(!method_exists(\Lsl50\Services\LeaderboardService::class, "departments"), "LeaderboardService departments removed");
+
+assert_public(AppSettingsService::parseBool("1") === true, "AppSettingsService parseBool true");
+assert_public(AppSettingsService::parseBool("0") === false, "AppSettingsService parseBool false");
+assert_public(AppSettingsService::isAiAutoGenerateOnClose($pdo) === true, "ai_auto_generate_on_close default true");
+AppSettingsService::setAiAutoGenerateOnClose($pdo, false);
+assert_public(AppSettingsService::isAiAutoGenerateOnClose($pdo) === false, "ai_auto_generate_on_close saved false");
+AppSettingsService::setAiAutoGenerateOnClose($pdo, true);
+assert_public(AppSettingsService::isAiAutoGenerateOnClose($pdo) === true, "ai_auto_generate_on_close restored true");
+
+$invalid = false;
+try {
+  AppSettingsService::sanitizeBoolKey("not_allowed_key");
+} catch (InvalidArgumentException) {
+  $invalid = true;
+}
+assert_public($invalid, "AppSettingsService rejects unknown bool keys");
 
 $batters = StatsEngine::battingTable($pdo, $seasonId);
 assert_public(is_array($batters), "battingTable returns array");

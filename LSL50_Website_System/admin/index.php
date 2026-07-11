@@ -44,6 +44,10 @@ include __DIR__ . "/../partials/header.php";
     <div class="font-semibold">Temporadas</div>
     <div class="small">Cerrar temporada, guardar historial e iniciar una nueva</div>
   </a>
+  <a class="card block" href="/admin/settings.php">
+    <div class="font-semibold">Configuración</div>
+    <div class="small">Automatización IA, integraciones y preferencias del sistema</div>
+  </a>
   <a class="card block" href="/admin/account.php">
     <div class="font-semibold">Cuenta</div>
     <div class="small">Contraseña y cierre de sesión del panel</div>

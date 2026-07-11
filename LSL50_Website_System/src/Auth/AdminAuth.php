@@ -78,7 +78,20 @@ function admin_attempt_login(PDO $pdo, string $email, string $password): bool
 
 function admin_logout(): void
 {
-  unset($_SESSION["lsl50_admin_user_id"], $_SESSION["lsl50_admin_email"], $_SESSION["local_admin"]);
+  unset($_SESSION["lsl50_admin_user_id"], $_SESSION["lsl50_admin_email"], $_SESSION["local_admin"], $_SESSION["lsl50_admin_csrf"]);
+}
+
+function admin_csrf_token(): string
+{
+  if (empty($_SESSION["lsl50_admin_csrf"]) || !is_string($_SESSION["lsl50_admin_csrf"])) {
+    $_SESSION["lsl50_admin_csrf"] = bin2hex(random_bytes(32));
+  }
+  return $_SESSION["lsl50_admin_csrf"];
+}
+
+function admin_verify_csrf(?string $token): bool
+{
+  return is_string($token) && $token !== "" && hash_equals(admin_csrf_token(), $token);
 }
 
 function admin_change_password(PDO $pdo, int $userId, string $currentPassword, string $newPassword): string

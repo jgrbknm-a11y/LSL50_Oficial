@@ -3,6 +3,7 @@
 namespace Lsl50\Services;
 
 use PDO;
+use Throwable;
 
 /**
  * Pipeline post-cierre: recalc stats + crónica IA automática.
@@ -18,7 +19,7 @@ final class GameClosurePipeline
       return $out;
     }
 
-    $autoGen = lsl_setting($pdo, "ai_auto_generate_on_close", "1") === "1";
+    $autoGen = AppSettingsService::isAiAutoGenerateOnClose($pdo);
     if (!$autoGen) {
       return $out;
     }
