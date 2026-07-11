@@ -1,121 +1,43 @@
 <?php
+declare(strict_types=1);
+
 require __DIR__ . "/../config.php";
+require_once __DIR__ . "/../src/autoload.php";
 require_admin();
 
-$pdo = db();
-$season = active_season($pdo);
-$seasonId = (int)$season["id"];
+use Lsl50\Services\StatsEngine;
 
-function fmt_leader_value($value, string $type): string {
-  if ($type === "avg") return number_format((float)$value, 3);
-  return (string)(int)$value;
-}
+$loadError = null;
+$standings = [];
+$leagueGames = 0;
+$departments = [];
+$featuredDepartments = [];
+$pitcherLeaders = [];
+$allBatters = [];
+$teamGameCounts = [];
+$season = ["id" => 0, "name" => ""];
+$seasonId = 0;
 
-function fmt_rate($value): string {
-  $formatted = number_format((float)$value, 3);
-  return str_starts_with($formatted, "0") ? substr($formatted, 1) : $formatted;
-}
-
-function offensive_leaders(PDO $pdo, string $expression, string $where, string $order, int $limit = 10, bool $qualifiedRate = false): array {
-  $qualification = "";
-  if ($qualifiedRate) {
-    $qualification = " AND (ps.AB + ps.BB + ps.HBP + ps.SH + ps.SF) >= (
-      SELECT CAST((COUNT(*) * 3.1) + 0.999999 AS INTEGER)
-      FROM games g
-      WHERE (g.home_team_id=t.id OR g.away_team_id=t.id)
-        AND EXISTS (SELECT 1 FROM game_player_stats gps WHERE gps.game_id=g.id)
-    )";
+try {
+  $pdo = db();
+  $season = active_season($pdo);
+  $seasonId = (int)$season["id"];
+  if ($seasonId <= 0) {
+    throw new RuntimeException("Temporada activa inválida.");
   }
-  $sql = "SELECT p.id, p.number, " . lsl_sql_full_name("p") . " player_name, t.name team_name,
-      ps.games_played, ps.AB, ps.H, ps.dbl, ps.tpl, ps.HR, ps.RBI, ps.BB, ps.HBP, ps.SH, ps.SF, ps.E, (ps.AB + ps.BB + ps.HBP + ps.SH + ps.SF) PA, $expression AS leader_value
-    FROM player_stats ps
-    JOIN players p ON p.id=ps.player_id
-    LEFT JOIN teams t ON t.id=p.team_id
-    WHERE $where $qualification
-    ORDER BY $order, ps.AB DESC, p.last_name, p.first_name
-    LIMIT $limit";
-  return $pdo->query($sql)->fetchAll();
+
+  StatsEngine::syncPitching($pdo, $seasonId);
+
+  $standings = StatsEngine::standings($pdo, $seasonId, false);
+  $leagueGames = StatsEngine::leagueGames($pdo, $seasonId);
+  $departments = StatsEngine::offensiveDepartments("admin");
+  $featuredDepartments = StatsEngine::featuredOffensiveDepartments();
+  $pitcherLeaders = StatsEngine::pitcherWinLeaders($pdo, $seasonId, 10);
+  $allBatters = StatsEngine::battingTable($pdo, $seasonId);
+  $teamGameCounts = StatsEngine::teamMinPlateAppearances($pdo, $seasonId);
+} catch (Throwable $e) {
+  $loadError = $e->getMessage();
 }
-
-function leader_initial(string $name): string {
-  $name = trim($name);
-  return $name !== "" ? mb_strtoupper(mb_substr($name, 0, 1)) : "-";
-}
-
-$standings = $pdo->query("SELECT t.name, COALESCE(ts.wins,0) wins, COALESCE(ts.losses,0) losses, COALESCE(ts.ties,0) ties,
-    COALESCE(ts.runs_for,0) runs_for, COALESCE(ts.runs_against,0) runs_against,
-    (COALESCE(ts.runs_for,0) - COALESCE(ts.runs_against,0)) run_diff
-  FROM teams t
-  LEFT JOIN team_stats ts ON ts.team_id=t.id
-  ORDER BY COALESCE(ts.wins,0) DESC, COALESCE(ts.ties,0) DESC, run_diff DESC, COALESCE(ts.runs_for,0) DESC, t.name")->fetchAll();
-
-$departments = [
-  ["title" => "Promedio", "abbr" => "AVG", "expr" => "ps.AVG", "where" => "ps.AB > 0", "order" => "ps.AVG DESC", "type" => "avg", "qualified" => true],
-  ["title" => "Hits", "abbr" => "H", "expr" => "ps.H", "where" => "ps.H > 0", "order" => "ps.H DESC", "type" => "int"],
-  ["title" => "Dobles", "abbr" => "2B", "expr" => "ps.dbl", "where" => "ps.dbl > 0", "order" => "ps.dbl DESC", "type" => "int"],
-  ["title" => "Triples", "abbr" => "3B", "expr" => "ps.tpl", "where" => "ps.tpl > 0", "order" => "ps.tpl DESC", "type" => "int"],
-  ["title" => "Jonrones", "abbr" => "HR", "expr" => "ps.HR", "where" => "ps.HR > 0", "order" => "ps.HR DESC", "type" => "int"],
-  ["title" => "Impulsadas", "abbr" => "RBI", "expr" => "ps.RBI", "where" => "ps.RBI > 0", "order" => "ps.RBI DESC", "type" => "int"],
-  ["title" => "Anotadas", "abbr" => "R", "expr" => "ps.R", "where" => "ps.R > 0", "order" => "ps.R DESC", "type" => "int"],
-  ["title" => "Bases por bolas", "abbr" => "BB", "expr" => "ps.BB", "where" => "ps.BB > 0", "order" => "ps.BB DESC", "type" => "int"],
-  ["title" => "Golpeados", "abbr" => "HBP", "expr" => "ps.HBP", "where" => "ps.HBP > 0", "order" => "ps.HBP DESC", "type" => "int"],
-  ["title" => "Toques sacrificio", "abbr" => "SH", "expr" => "ps.SH", "where" => "ps.SH > 0", "order" => "ps.SH DESC", "type" => "int"],
-  ["title" => "Elevados sacrificio", "abbr" => "SF", "expr" => "ps.SF", "where" => "ps.SF > 0", "order" => "ps.SF DESC", "type" => "int"],
-  ["title" => "Ponches recibidos", "abbr" => "SO", "expr" => "ps.SO", "where" => "ps.SO > 0", "order" => "ps.SO DESC", "type" => "int"],
-  ["title" => "Bases robadas", "abbr" => "SB", "expr" => "ps.SB", "where" => "ps.SB > 0", "order" => "ps.SB DESC", "type" => "int"],
-  ["title" => "Errores defensivos", "abbr" => "E", "expr" => "ps.E", "where" => "ps.E > 0", "order" => "ps.E DESC", "type" => "int"],
-  ["title" => "Embazado", "abbr" => "OBP", "expr" => "ps.OBP", "where" => "ps.AB + ps.BB + ps.HBP + ps.SF > 0", "order" => "ps.OBP DESC", "type" => "avg", "qualified" => true],
-  ["title" => "Slugging", "abbr" => "SLG", "expr" => "ps.SLG", "where" => "ps.AB > 0", "order" => "ps.SLG DESC", "type" => "avg", "qualified" => true],
-  ["title" => "OPS", "abbr" => "OPS", "expr" => "(ps.OBP + ps.SLG)", "where" => "ps.AB > 0", "order" => "(ps.OBP + ps.SLG) DESC", "type" => "avg", "qualified" => true],
-  ["title" => "Bases totales", "abbr" => "TB", "expr" => "ps.TB", "where" => "ps.TB > 0", "order" => "ps.TB DESC", "type" => "int"],
-  ["title" => "Turnos", "abbr" => "AB", "expr" => "ps.AB", "where" => "ps.AB > 0", "order" => "ps.AB DESC", "type" => "int"],
-  ["title" => "Juegos legales", "abbr" => "GP", "expr" => "ps.games_played", "where" => "ps.games_played > 0", "order" => "ps.games_played DESC", "type" => "int"],
-];
-
-$featuredDepartments = [
-  ["title" => "Mejor promedio", "abbr" => "AVG", "expr" => "ps.AVG", "where" => "ps.AB > 0", "order" => "ps.AVG DESC", "type" => "avg", "qualified" => true],
-  ["title" => "Más hits", "abbr" => "H", "expr" => "ps.H", "where" => "ps.H > 0", "order" => "ps.H DESC", "type" => "int"],
-  ["title" => "Más impulsadas", "abbr" => "RBI", "expr" => "ps.RBI", "where" => "ps.RBI > 0", "order" => "ps.RBI DESC", "type" => "int"],
-  ["title" => "Más anotadas", "abbr" => "R", "expr" => "ps.R", "where" => "ps.R > 0", "order" => "ps.R DESC", "type" => "int"],
-];
-
-$pitcherLeaders = $pdo->query("SELECT p.id, p.number, " . lsl_sql_full_name("p") . " player_name, t.name team_name, COUNT(*) wins
-  FROM games g
-  JOIN players p ON p.id=g.winning_pitcher_id
-  LEFT JOIN teams t ON t.id=p.team_id
-  WHERE COALESCE(g.season_id, $seasonId) = $seasonId
-    AND g.winning_pitcher_id IS NOT NULL
-    AND g.final_home != g.final_away
-  GROUP BY p.id, p.number, p.first_name, p.last_name, t.name
-  ORDER BY wins DESC, p.last_name, p.first_name
-  LIMIT 10")->fetchAll();
-
-$allBatters = $pdo->query("SELECT p.id, p.number, " . lsl_sql_full_name("p") . " player_name, t.name team_name,
-    ps.games_played, ps.AB, ps.R, ps.H, ps.dbl, ps.tpl, ps.HR, ps.TB, ps.RBI, ps.BB, ps.SO, ps.SB, ps.HBP, ps.SH, ps.SF, ps.E,
-    ps.AVG, ps.OBP, ps.SLG, (ps.OBP + ps.SLG) OPS, (ps.AB + ps.BB + ps.HBP + ps.SH + ps.SF) PA,
-    (
-      SELECT CAST((COUNT(*) * 3.1) + 0.999999 AS INTEGER)
-      FROM games g
-      WHERE (g.home_team_id=t.id OR g.away_team_id=t.id)
-        AND EXISTS (SELECT 1 FROM game_player_stats gps WHERE gps.game_id=g.id)
-    ) min_pa
-  FROM player_stats ps
-  JOIN players p ON p.id=ps.player_id
-  LEFT JOIN teams t ON t.id=p.team_id
-  WHERE ps.AB > 0 OR ps.BB > 0 OR ps.HBP > 0 OR ps.SH > 0 OR ps.SF > 0 OR ps.R > 0 OR ps.H > 0 OR ps.RBI > 0
-  ORDER BY ps.H DESC, ps.RBI DESC, ps.AVG DESC, p.last_name, p.first_name")->fetchAll();
-
-$leagueGames = (int)$pdo->query("SELECT COUNT(DISTINCT id) FROM games g
-  WHERE COALESCE(g.season_id, $seasonId) = $seasonId
-    AND EXISTS (SELECT 1 FROM game_player_stats gps WHERE gps.game_id=g.id)")->fetchColumn();
-$teamGameCounts = $pdo->query("SELECT t.name, COUNT(DISTINCT g.id) scored_games,
-    CAST((COUNT(DISTINCT g.id) * 3.1) + 0.999999 AS INTEGER) min_pa
-  FROM teams t
-  LEFT JOIN games g ON (g.home_team_id=t.id OR g.away_team_id=t.id)
-    AND COALESCE(g.season_id, $seasonId) = $seasonId
-    AND EXISTS (SELECT 1 FROM game_player_stats gps WHERE gps.game_id=g.id)
-  GROUP BY t.id, t.name
-  ORDER BY t.name")->fetchAll();
 
 include __DIR__ . "/../partials/header.php";
 ?>
@@ -133,9 +55,13 @@ include __DIR__ . "/../partials/header.php";
   @media (max-width:760px){.leaders-hero{grid-template-columns:1fr}.rule-pills{justify-content:flex-start}.leaders-title{font-size:32px}.dept-grid{grid-template-columns:1fr}.feature-stats{grid-template-columns:repeat(2,1fr)}}
 </style>
 
+<?php if ($loadError): ?>
+  <div class="warning">No fue posible cargar los líderes: <?= h($loadError) ?></div>
+<?php else: ?>
+
 <div class="leaders-hero">
   <div>
-    <div class="leaders-kicker">Temporada <?= h($season["name"]) ?></div>
+    <div class="leaders-kicker">Temporada <?= h((string)$season["name"]) ?></div>
     <h1 class="leaders-title">Líderes LSL50</h1>
     <p class="leaders-sub">Bateo general, rankings por departamento y pitchers ganadores usando las estadísticas oficiales del cuaderno.</p>
   </div>
@@ -159,11 +85,11 @@ include __DIR__ . "/../partials/header.php";
       <tbody>
         <?php foreach ($standings as $row): ?>
           <tr>
-            <td><?= h($row["name"]) ?></td>
-            <td><strong><?= (int)$row["wins"] ?>-<?= (int)$row["losses"] ?><?= (int)$row["ties"] ? "-" . (int)$row["ties"] : "" ?></strong></td>
-            <td><?= (int)$row["runs_for"] ?></td>
-            <td><?= (int)$row["runs_against"] ?></td>
-            <td><?= (int)$row["run_diff"] ?></td>
+            <td><?= h((string)$row["name"]) ?></td>
+            <td><strong><?= h((string)($row["record"] ?? "")) ?></strong></td>
+            <td><?= (int)($row["runs_for"] ?? 0) ?></td>
+            <td><?= (int)($row["runs_against"] ?? 0) ?></td>
+            <td><?= (int)($row["run_diff"] ?? 0) ?></td>
           </tr>
         <?php endforeach; ?>
       </tbody>
@@ -176,11 +102,22 @@ include __DIR__ . "/../partials/header.php";
       <thead><tr><th>Departamento</th><th>Jugador</th><th>Valor</th></tr></thead>
       <tbody>
         <?php foreach ($featuredDepartments as $dept): ?>
-          <?php $rows = offensive_leaders($pdo, $dept["expr"], $dept["where"], $dept["order"], 1, !empty($dept["qualified"])); $leader = $rows[0] ?? null; ?>
+          <?php
+            $rows = StatsEngine::offensiveLeaders(
+              $pdo,
+              (string)$dept["expr"],
+              (string)$dept["where"],
+              (string)$dept["order"],
+              1,
+              !empty($dept["qualified"])
+            );
+            $leader = $rows[0] ?? null;
+            $deptType = (string)($dept["type"] ?? "int");
+          ?>
           <tr>
-            <td><?= h($dept["title"]) ?></td>
+            <td><?= h((string)$dept["title"]) ?></td>
             <td><?= $leader ? h(($leader["number"] ? "#" . $leader["number"] . " " : "") . $leader["player_name"] . " - " . ($leader["team_name"] ?: "-")) : '<span class="small">Sin datos</span>' ?></td>
-            <td><strong><?= $leader ? h(fmt_leader_value($leader["leader_value"], $dept["type"])) : "-" ?></strong></td>
+            <td><strong><?= $leader ? h(StatsEngine::fmtLeaderValue($leader["leader_value"], $deptType)) : "-" ?></strong></td>
           </tr>
         <?php endforeach; ?>
       </tbody>
@@ -190,24 +127,24 @@ include __DIR__ . "/../partials/header.php";
 </div>
 
 <?php
-  $avgLeaderRows = offensive_leaders($pdo, "ps.AVG", "ps.AB > 0", "ps.AVG DESC", 1, true);
+  $avgLeaderRows = StatsEngine::offensiveLeaders($pdo, "ps.AVG", "ps.AB > 0", "ps.AVG DESC", 1, true);
   $avgFeature = $avgLeaderRows[0] ?? null;
 ?>
 <div class="card leader-card-feature mb-4">
   <?php if ($avgFeature): ?>
     <div class="feature-inner">
-      <div class="feature-initial"><?= h(leader_initial($avgFeature["player_name"])) ?></div>
+      <div class="feature-initial"><?= h(lsl_public_leader_initial((string)$avgFeature["player_name"])) ?></div>
       <div>
         <div class="small" style="color:#d7a72f;font-weight:900">Champion Bate (AVG)</div>
-        <div class="feature-name"><?= h($avgFeature["player_name"]) ?></div>
-        <div class="feature-meta"><?= h($avgFeature["team_name"] ?: "-") ?></div>
+        <div class="feature-name"><?= h((string)$avgFeature["player_name"]) ?></div>
+        <div class="feature-meta"><?= h((string)($avgFeature["team_name"] ?: "-")) ?></div>
       </div>
     </div>
     <div class="feature-stats">
       <div><b>AB</b><span><?= (int)$avgFeature["AB"] ?></span></div>
       <div><b>H</b><span><?= (int)$avgFeature["H"] ?></span></div>
       <div><b>PA</b><span><?= (int)$avgFeature["PA"] ?></span></div>
-      <div><b>AVG</b><span><?= h(fmt_rate($avgFeature["leader_value"])) ?></span></div>
+      <div><b>AVG</b><span><?= h(lsl_public_fmt_avg((float)$avgFeature["leader_value"])) ?></span></div>
     </div>
   <?php else: ?>
     <div class="feature-inner">
@@ -234,9 +171,8 @@ include __DIR__ . "/../partials/header.php";
       </thead>
       <tbody>
         <?php foreach ($allBatters as $row): ?>
-          <?php $isQualified = (int)$row["PA"] >= (int)$row["min_pa"]; ?>
           <tr data-search="<?= h(mb_strtolower($row["player_name"] . " " . ($row["team_name"] ?: ""))) ?>">
-            <td class="player-cell"><?= h($row["player_name"]) ?><span class="team-muted"><?= h($row["team_name"] ?: "-") ?></span></td>
+            <td class="player-cell"><?= h((string)$row["player_name"]) ?><span class="team-muted"><?= h((string)($row["team_name"] ?: "-")) ?></span></td>
             <td><?= (int)$row["games_played"] ?></td>
             <td><?= (int)$row["AB"] ?></td>
             <td><?= (int)$row["R"] ?></td>
@@ -254,15 +190,15 @@ include __DIR__ . "/../partials/header.php";
             <td><strong><?= (int)$row["RBI"] ?></strong></td>
             <td><?= (int)$row["E"] ?></td>
             <td><?= (int)$row["PA"] ?></td>
-            <td class="num-blue"><?= h(fmt_rate($row["OBP"])) ?></td>
-            <td class="num-purple"><?= h(fmt_rate($row["SLG"])) ?></td>
-            <td class="num-purple"><?= h(fmt_rate($row["OPS"])) ?></td>
-            <td><strong><?= h(fmt_rate($row["AVG"])) ?></strong></td>
-            <td class="<?= $isQualified ? "qualified" : "not-qualified" ?>"><?= $isQualified ? "OK" : (int)$row["PA"] . "/" . (int)$row["min_pa"] ?></td>
+            <td class="num-blue"><?= h(lsl_public_fmt_avg((float)$row["OBP"])) ?></td>
+            <td class="num-purple"><?= h(lsl_public_fmt_avg((float)$row["SLG"])) ?></td>
+            <td class="num-purple"><?= h(lsl_public_fmt_avg((float)$row["OPS"])) ?></td>
+            <td><strong><?= h(lsl_public_fmt_avg((float)$row["AVG"])) ?></strong></td>
+            <td class="<?= !empty($row["qualified"]) ? "qualified" : "not-qualified" ?>"><?= h((string)($row["qual_label"] ?? "N/A")) ?></td>
           </tr>
         <?php endforeach; ?>
         <?php if (!$allBatters): ?>
-          <tr><td colspan="19" class="small">Todavía no hay estadísticas de bateo registradas.</td></tr>
+          <tr><td colspan="23" class="small">Todavía no hay estadísticas de bateo registradas.</td></tr>
         <?php endif; ?>
       </tbody>
     </table>
@@ -276,9 +212,9 @@ include __DIR__ . "/../partials/header.php";
     <tbody>
       <?php foreach ($pitcherLeaders as $row): ?>
         <tr>
-          <td><?= h($row["number"] ?: "-") ?></td>
-          <td><?= h($row["player_name"]) ?></td>
-          <td><?= h($row["team_name"] ?: "-") ?></td>
+          <td><?= h((string)($row["number"] ?: "-")) ?></td>
+          <td><?= h((string)$row["player_name"]) ?></td>
+          <td><?= h((string)($row["team_name"] ?: "-")) ?></td>
           <td><strong><?= (int)$row["wins"] ?></strong></td>
         </tr>
       <?php endforeach; ?>
@@ -294,7 +230,7 @@ include __DIR__ . "/../partials/header.php";
   <div class="grid md:grid-cols-2 gap-2">
     <?php foreach ($teamGameCounts as $row): ?>
       <div class="pill dark" style="justify-content:space-between;border-radius:8px">
-        <span><?= h($row["name"]) ?></span>
+        <span><?= h((string)$row["name"]) ?></span>
         <span><?= (int)$row["min_pa"] ?> PA / <?= (int)$row["scored_games"] ?> J</span>
       </div>
     <?php endforeach; ?>
@@ -303,9 +239,17 @@ include __DIR__ . "/../partials/header.php";
 
 <div class="dept-grid">
   <?php foreach ($departments as $dept): ?>
-    <?php $rows = offensive_leaders($pdo, $dept["expr"], $dept["where"], $dept["order"], 10, !empty($dept["qualified"])); ?>
     <?php
-      $headClass = match ($dept["abbr"]) {
+      $rows = StatsEngine::offensiveLeaders(
+        $pdo,
+        (string)$dept["expr"],
+        (string)$dept["where"],
+        (string)$dept["order"],
+        10,
+        !empty($dept["qualified"])
+      );
+      $deptType = (string)($dept["type"] ?? "int");
+      $headClass = match ((string)$dept["abbr"]) {
         "AVG" => "avg",
         "H" => "h",
         "2B" => "two",
@@ -323,22 +267,22 @@ include __DIR__ . "/../partials/header.php";
     ?>
     <div class="card dept-card">
       <div class="dept-head <?= h($headClass) ?>">
-        <span><?= h($dept["title"]) ?> (<?= h($dept["abbr"]) ?>)</span>
+        <span><?= h((string)$dept["title"]) ?> (<?= h((string)$dept["abbr"]) ?>)</span>
         <?php if (!empty($dept["qualified"])): ?><small>3.1 PA</small><?php endif; ?>
       </div>
       <div>
         <?php foreach ($rows as $idx => $row): ?>
           <div class="rank-row" data-search="<?= h(mb_strtolower($row["player_name"] . " " . ($row["team_name"] ?: ""))) ?>">
             <div class="rank"><?= $idx + 1 ?></div>
-            <div class="avatar"><?= h(leader_initial($row["player_name"])) ?></div>
+            <div class="avatar"><?= h(lsl_public_leader_initial((string)$row["player_name"])) ?></div>
             <div>
-              <div class="rank-name"><?= h($row["player_name"]) ?></div>
-              <div class="rank-team"><?= h($row["team_name"] ?: "-") ?></div>
+              <div class="rank-name"><?= h((string)$row["player_name"]) ?></div>
+              <div class="rank-team"><?= h((string)($row["team_name"] ?: "-")) ?></div>
               <?php if (!empty($dept["qualified"])): ?>
                 <span class="pa-chip">PA: <?= (int)$row["PA"] ?></span>
               <?php endif; ?>
             </div>
-            <div class="rank-value"><?= h($dept["type"] === "avg" ? fmt_rate($row["leader_value"]) : fmt_leader_value($row["leader_value"], $dept["type"])) ?></div>
+            <div class="rank-value"><?= h($deptType === "avg" ? lsl_public_fmt_avg((float)$row["leader_value"]) : StatsEngine::fmtLeaderValue($row["leader_value"], $deptType)) ?></div>
           </div>
         <?php endforeach; ?>
         <?php if (!$rows): ?>
@@ -365,5 +309,7 @@ include __DIR__ . "/../partials/header.php";
     });
   }
 </script>
+
+<?php endif; ?>
 
 <?php include __DIR__ . "/../partials/footer.php"; ?>

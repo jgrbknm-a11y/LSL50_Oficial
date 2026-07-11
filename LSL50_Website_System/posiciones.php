@@ -2,7 +2,6 @@
 require __DIR__ . "/config.php";
 require_once __DIR__ . "/src/autoload.php";
 
-use Lsl50\Services\LeaderboardService;
 use Lsl50\Services\StatsEngine;
 
 $pdo = db();

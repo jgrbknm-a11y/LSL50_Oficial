@@ -69,7 +69,28 @@ final class StatsEngine
     return LeaderboardService::leagueGames($pdo, $seasonId);
   }
 
-  public static function offensiveDepartments(): array
+  /** @return list<array<string, mixed>> */
+  public static function offensiveDepartments(string $scope = "public"): array
+  {
+    return match (strtolower(trim($scope))) {
+      "full", "admin" => self::adminOffensiveDepartments(),
+      default => self::publicOffensiveDepartments(),
+    };
+  }
+
+  /** @return list<array<string, mixed>> */
+  public static function featuredOffensiveDepartments(): array
+  {
+    return [
+      ["title" => "Mejor promedio", "abbr" => "AVG", "expr" => "ps.AVG", "where" => "ps.AB > 0", "order" => "ps.AVG DESC", "type" => "avg", "qualified" => true],
+      ["title" => "Más hits", "abbr" => "H", "expr" => "ps.H", "where" => "ps.H > 0", "order" => "ps.H DESC", "type" => "int"],
+      ["title" => "Más impulsadas", "abbr" => "RBI", "expr" => "ps.RBI", "where" => "ps.RBI > 0", "order" => "ps.RBI DESC", "type" => "int"],
+      ["title" => "Más anotadas", "abbr" => "R", "expr" => "ps.R", "where" => "ps.R > 0", "order" => "ps.R DESC", "type" => "int"],
+    ];
+  }
+
+  /** @return list<array<string, mixed>> */
+  private static function publicOffensiveDepartments(): array
   {
     return [
       ["title" => "Champion Bate", "abbr" => "AVG", "expr" => "ps.AVG", "where" => "ps.AB > 0", "order" => "ps.AVG DESC", "type" => "avg", "qualified" => true, "featured" => true],
@@ -88,6 +109,53 @@ final class StatsEngine
       ["title" => "Bases robadas", "abbr" => "SB", "expr" => "ps.SB", "where" => "ps.SB > 0", "order" => "ps.SB DESC", "type" => "int"],
       ["title" => "Bases totales", "abbr" => "TB", "expr" => "ps.TB", "where" => "ps.TB > 0", "order" => "ps.TB DESC", "type" => "int"],
     ];
+  }
+
+  /** @return list<array<string, mixed>> */
+  private static function adminOffensiveDepartments(): array
+  {
+    return [
+      ["title" => "Promedio", "abbr" => "AVG", "expr" => "ps.AVG", "where" => "ps.AB > 0", "order" => "ps.AVG DESC", "type" => "avg", "qualified" => true],
+      ["title" => "Hits", "abbr" => "H", "expr" => "ps.H", "where" => "ps.H > 0", "order" => "ps.H DESC", "type" => "int"],
+      ["title" => "Dobles", "abbr" => "2B", "expr" => "ps.dbl", "where" => "ps.dbl > 0", "order" => "ps.dbl DESC", "type" => "int"],
+      ["title" => "Triples", "abbr" => "3B", "expr" => "ps.tpl", "where" => "ps.tpl > 0", "order" => "ps.tpl DESC", "type" => "int"],
+      ["title" => "Jonrones", "abbr" => "HR", "expr" => "ps.HR", "where" => "ps.HR > 0", "order" => "ps.HR DESC", "type" => "int"],
+      ["title" => "Impulsadas", "abbr" => "RBI", "expr" => "ps.RBI", "where" => "ps.RBI > 0", "order" => "ps.RBI DESC", "type" => "int"],
+      ["title" => "Anotadas", "abbr" => "R", "expr" => "ps.R", "where" => "ps.R > 0", "order" => "ps.R DESC", "type" => "int"],
+      ["title" => "Bases por bolas", "abbr" => "BB", "expr" => "ps.BB", "where" => "ps.BB > 0", "order" => "ps.BB DESC", "type" => "int"],
+      ["title" => "Golpeados", "abbr" => "HBP", "expr" => "ps.HBP", "where" => "ps.HBP > 0", "order" => "ps.HBP DESC", "type" => "int"],
+      ["title" => "Toques sacrificio", "abbr" => "SH", "expr" => "ps.SH", "where" => "ps.SH > 0", "order" => "ps.SH DESC", "type" => "int"],
+      ["title" => "Elevados sacrificio", "abbr" => "SF", "expr" => "ps.SF", "where" => "ps.SF > 0", "order" => "ps.SF DESC", "type" => "int"],
+      ["title" => "Ponches recibidos", "abbr" => "SO", "expr" => "ps.SO", "where" => "ps.SO > 0", "order" => "ps.SO DESC", "type" => "int"],
+      ["title" => "Bases robadas", "abbr" => "SB", "expr" => "ps.SB", "where" => "ps.SB > 0", "order" => "ps.SB DESC", "type" => "int"],
+      ["title" => "Errores defensivos", "abbr" => "E", "expr" => "ps.E", "where" => "ps.E > 0", "order" => "ps.E DESC", "type" => "int"],
+      ["title" => "Embazado", "abbr" => "OBP", "expr" => "ps.OBP", "where" => "ps.AB + ps.BB + ps.HBP + ps.SF > 0", "order" => "ps.OBP DESC", "type" => "avg", "qualified" => true],
+      ["title" => "Slugging", "abbr" => "SLG", "expr" => "ps.SLG", "where" => "ps.AB > 0", "order" => "ps.SLG DESC", "type" => "avg", "qualified" => true],
+      ["title" => "OPS", "abbr" => "OPS", "expr" => "(ps.OBP + ps.SLG)", "where" => "ps.AB > 0", "order" => "(ps.OBP + ps.SLG) DESC", "type" => "avg", "qualified" => true],
+      ["title" => "Bases totales", "abbr" => "TB", "expr" => "ps.TB", "where" => "ps.TB > 0", "order" => "ps.TB DESC", "type" => "int"],
+      ["title" => "Turnos", "abbr" => "AB", "expr" => "ps.AB", "where" => "ps.AB > 0", "order" => "ps.AB DESC", "type" => "int"],
+      ["title" => "Juegos legales", "abbr" => "GP", "expr" => "ps.games_played", "where" => "ps.games_played > 0", "order" => "ps.games_played DESC", "type" => "int"],
+    ];
+  }
+
+  /** @return list<array<string, mixed>> */
+  public static function teamMinPlateAppearances(PDO $pdo, int $seasonId): array
+  {
+    $seasonId = (int)$seasonId;
+    return $pdo->query("SELECT t.name, COUNT(DISTINCT g.id) scored_games,
+        CAST((COUNT(DISTINCT g.id) * 3.1) + 0.999999 AS INTEGER) min_pa
+      FROM teams t
+      LEFT JOIN games g ON (g.home_team_id = t.id OR g.away_team_id = t.id)
+        AND COALESCE(g.season_id, $seasonId) = $seasonId
+        AND EXISTS (SELECT 1 FROM game_player_stats gps WHERE gps.game_id = g.id)
+      GROUP BY t.id, t.name
+      ORDER BY t.name")->fetchAll();
+  }
+
+  /** @return list<array<string, mixed>> */
+  public static function pitcherWinLeaders(PDO $pdo, int $seasonId, int $limit = 10): array
+  {
+    return LeaderboardService::pitcherWins($pdo, $seasonId, max(1, min(50, $limit)));
   }
 
   public static function offensiveLeaders(

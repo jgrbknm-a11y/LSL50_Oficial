@@ -98,22 +98,6 @@ final class LeaderboardService
       ORDER BY COALESCE(pps.W, 0) DESC, CASE WHEN COALESCE(pps.ERA, 0) = 0 THEN 999 ELSE pps.ERA END ASC, p.last_name")->fetchAll();
   }
 
-  public static function departments(): array
-  {
-    return [
-      ["title" => "Champion Bate", "abbr" => "AVG", "expr" => "ps.AVG", "where" => "ps.AB > 0", "order" => "ps.AVG DESC", "type" => "avg", "qualified" => true, "featured" => true],
-      ["title" => "Jonrones", "abbr" => "HR", "expr" => "ps.HR", "where" => "ps.HR > 0", "order" => "ps.HR DESC", "type" => "int"],
-      ["title" => "Dobles", "abbr" => "2B", "expr" => "ps.dbl", "where" => "ps.dbl > 0", "order" => "ps.dbl DESC", "type" => "int"],
-      ["title" => "Triples", "abbr" => "3B", "expr" => "ps.tpl", "where" => "ps.tpl > 0", "order" => "ps.tpl DESC", "type" => "int"],
-      ["title" => "Carreras Impulsadas", "abbr" => "RBI", "expr" => "ps.RBI", "where" => "ps.RBI > 0", "order" => "ps.RBI DESC", "type" => "int"],
-      ["title" => "Promedio", "abbr" => "AVG", "expr" => "ps.AVG", "where" => "ps.AB > 0", "order" => "ps.AVG DESC", "type" => "avg", "qualified" => true],
-      ["title" => "Hits", "abbr" => "H", "expr" => "ps.H", "where" => "ps.H > 0", "order" => "ps.H DESC", "type" => "int"],
-      ["title" => "Anotadas", "abbr" => "R", "expr" => "ps.R", "where" => "ps.R > 0", "order" => "ps.R DESC", "type" => "int"],
-      ["title" => "Slugging", "abbr" => "SLG", "expr" => "ps.SLG", "where" => "ps.AB > 0", "order" => "ps.SLG DESC", "type" => "avg", "qualified" => true],
-      ["title" => "OPS", "abbr" => "OPS", "expr" => "(ps.OBP + ps.SLG)", "where" => "ps.AB > 0", "order" => "(ps.OBP + ps.SLG) DESC", "type" => "avg", "qualified" => true],
-    ];
-  }
-
   public static function fmtLeaderValue($value, string $type): string
   {
     return $type === "avg" ? lsl_public_fmt_avg((float)$value) : (string)(int)$value;

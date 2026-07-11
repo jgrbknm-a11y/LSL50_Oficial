@@ -86,7 +86,7 @@ final class LeadersResource
   private static function resolveDepartments(string $scope): array
   {
     $scope = strtolower(trim($scope));
-    $all = StatsEngine::offensiveDepartments();
+    $all = StatsEngine::offensiveDepartments($scope === "full" ? "full" : "public");
 
     if ($scope === "full") {
       $out = [];

@@ -8,7 +8,6 @@ declare(strict_types=1);
 
 require __DIR__ . "/../config.php";
 require __DIR__ . "/../src/autoload.php";
-require_once __DIR__ . "/../admin/services/ai_news_generator.php";
 
 use Lsl50\Api\V1\ApiSanitizer;
 use Lsl50\Api\V1\LeadersResource;
@@ -44,6 +43,23 @@ $abbrs = array_column($depts, "abbr");
 assert_public(in_array("OPS", $abbrs, true), "departments include OPS");
 assert_public(in_array("OBP", $abbrs, true), "departments include OBP");
 assert_public(in_array("SLG", $abbrs, true), "departments include SLG");
+
+$adminDepts = StatsEngine::offensiveDepartments("admin");
+assert_public(count($adminDepts) >= 20, "admin offensiveDepartments has 20 categories");
+$adminAbbrs = array_column($adminDepts, "abbr");
+assert_public(in_array("HBP", $adminAbbrs, true), "admin departments include HBP");
+assert_public(in_array("GP", $adminAbbrs, true), "admin departments include GP");
+
+$featured = StatsEngine::featuredOffensiveDepartments();
+assert_public(count($featured) === 4, "featuredOffensiveDepartments has 4 entries");
+
+$teamPa = StatsEngine::teamMinPlateAppearances($pdo, $seasonId);
+assert_public(is_array($teamPa), "teamMinPlateAppearances returns array");
+
+$pitchWins = StatsEngine::pitcherWinLeaders($pdo, $seasonId, 5);
+assert_public(is_array($pitchWins), "pitcherWinLeaders returns array");
+
+assert_public(!method_exists(\Lsl50\Services\LeaderboardService::class, "departments"), "LeaderboardService departments removed");
 
 $batters = StatsEngine::battingTable($pdo, $seasonId);
 assert_public(is_array($batters), "battingTable returns array");
