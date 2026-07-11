@@ -1,0 +1,129 @@
+<?php
+/**
+ * Integration tests: StatsEngine, AI news generator, public stats parity.
+ *
+ * Run: php LSL50_Website_System/tools/test_stats_public.php
+ */
+declare(strict_types=1);
+
+require __DIR__ . "/../config.php";
+require __DIR__ . "/../src/autoload.php";
+require_once __DIR__ . "/../admin/services/ai_news_generator.php";
+
+use Lsl50\Services\StatsEngine;
+
+$passed = 0;
+$failed = 0;
+
+function assert_public(bool $cond, string $label): void
+{
+  global $passed, $failed;
+  if ($cond) {
+    echo "OK  $label\n";
+    $passed++;
+  } else {
+    echo "FAIL $label\n";
+    $failed++;
+  }
+}
+
+echo "=== LSL50 Public Stats & AI Tests ===\n\n";
+
+$pdo = db();
+$season = active_season($pdo);
+$seasonId = (int)$season["id"];
+
+$depts = StatsEngine::offensiveDepartments();
+assert_public(count($depts) >= 14, "offensiveDepartments has 14+ categories");
+$abbrs = array_column($depts, "abbr");
+assert_public(in_array("OPS", $abbrs, true), "departments include OPS");
+assert_public(in_array("OBP", $abbrs, true), "departments include OBP");
+assert_public(in_array("SLG", $abbrs, true), "departments include SLG");
+
+$batters = StatsEngine::battingTable($pdo, $seasonId);
+assert_public(is_array($batters), "battingTable returns array");
+if ($batters) {
+  $first = $batters[0];
+  assert_public(array_key_exists("OPS", $first), "batter row has OPS");
+  assert_public(array_key_exists("ISO", $first), "batter row has ISO");
+  assert_public(array_key_exists("qual_label", $first), "batter row has qual_label");
+}
+
+$enriched = StatsEngine::enrichBatterRow([
+  "AVG" => 0.300,
+  "SLG" => 0.500,
+  "OBP" => 0.400,
+  "PA" => 20,
+  "min_pa" => 15,
+  "AB" => 18,
+  "H" => 6,
+  "HR" => 1,
+  "BB" => 2,
+  "SF" => 0,
+]);
+assert_public(abs($enriched["OPS"] - 0.900) < 0.001, "enrichBatterRow OPS = OBP + SLG");
+assert_public(abs($enriched["ISO"] - 0.200) < 0.001, "enrichBatterRow ISO = SLG - AVG");
+assert_public($enriched["qualified"] === true, "enrichBatterRow qualified when PA >= min_pa");
+
+$pitching = StatsEngine::pitchingTable($pdo, $seasonId);
+assert_public(is_array($pitching), "pitchingTable returns array");
+foreach ($pitching as $row) {
+  if ((float)($row["IP"] ?? 0) > 0 && (int)($row["ER"] ?? 0) >= 0) {
+    $expectedEra = round(((int)$row["ER"] * 9) / (float)$row["IP"], 2);
+    assert_public(abs((float)$row["ERA"] - $expectedEra) < 0.02, "pitching ERA computed for " . ($row["player_name"] ?? "?"));
+    break;
+  }
+}
+
+$standings = StatsEngine::standings($pdo, $seasonId);
+assert_public(is_array($standings), "standings returns array");
+if ($standings) {
+  assert_public(isset($standings[0]["streak"]), "standings row has streak");
+  assert_public(isset($standings[0]["l10"]), "standings row has l10");
+}
+
+$gameId = (int)$pdo->query("SELECT id FROM games ORDER BY id DESC LIMIT 1")->fetchColumn();
+if ($gameId > 0) {
+  $box = StatsEngine::gameBoxSummary($pdo, $gameId);
+  assert_public(isset($box["teams"]) && is_array($box["teams"]), "gameBoxSummary has teams");
+  assert_public(array_key_exists("mvp", $box), "gameBoxSummary has mvp key");
+
+  $prompt = lsl_ai_build_sports_prompt([
+    "game" => [
+      "game_date" => "2026-07-10",
+      "away_name" => "Visitante",
+      "home_name" => "Local",
+      "final_away" => 3,
+      "final_home" => 5,
+      "location" => "Campo",
+      "winning_pitcher_name" => "Juan Pérez",
+    ],
+    "box" => $box,
+    "leaders" => [],
+    "plays" => [],
+    "video_url" => "https://www.youtube.com/watch?v=test123",
+  ], "profesional", 90);
+  assert_public(str_contains($prompt, "MVP") || str_contains($prompt, "mvp_sugerido"), "AI prompt references MVP");
+  assert_public(str_contains($prompt, "Visitante"), "AI prompt includes away team");
+
+  $localNote = lsl_ai_build_local_note([
+    "game" => [
+      "home_name" => "Local",
+      "away_name" => "Visitante",
+      "final_home" => 5,
+      "final_away" => 3,
+      "winning_pitcher_name" => "Juan Pérez",
+    ],
+    "box" => $box,
+  ], 90);
+  assert_public($localNote["title"] !== "", "local note has title");
+  assert_public(str_contains($localNote["body"], "Local"), "local note body mentions home team");
+  assert_public(str_contains($localNote["body"], "Juan Pérez"), "local note mentions winning pitcher");
+}
+
+assert_public(function_exists("lsl_ai_generate_for_game"), "lsl_ai_generate_for_game exists");
+
+echo "\n=== Summary ===\n";
+echo "Passed: $passed\n";
+echo "Failed: $failed\n";
+exit($failed > 0 ? 1 : 0);

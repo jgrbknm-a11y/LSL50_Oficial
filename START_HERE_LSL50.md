@@ -73,7 +73,7 @@ Documento maestro: **`ARCHITECTURE_LSL50.md`**
 | `AiNewsGenerator` | ✅ Crónica automática OpenAI/local |
 | API v1 (`/api/v1/standings.php`, `leaders.php`, `game.php`) | ✅ |
 | YouTube embed (`games.youtube_video_id`, `news.php`) | ✅ |
-| Frontend premium (`public/assets/css/lsl50-public.css`) | ✅ Fase 1 |
+| Frontend premium (`public/assets/css/lsl50-public.css`) | ✅ Portal público con partials |
 | MySQL/PostgreSQL migration | ✅ Fase 2 (`docs/schema-mysql.sql`, `Database.php`) |
 
 **Panel OBS Control Center (`:5050/control.html`) — sin cambios operativos.**
@@ -87,6 +87,23 @@ php LSL50_Website_System/tools/migrate_sqlite_to_mysql.php   # copia datos SQLit
 ```
 
 En `.env`: `DB_DRIVER=mysql`, `DB_HOST`, `DB_NAME`, `DB_USER`, `DB_PASS`.
+
+### Portal público (URLs limpias con router.php)
+
+```bash
+php -S 0.0.0.0:8080 -t LSL50_Website_System LSL50_Website_System/router.php
+```
+
+| URL | Página |
+|-----|--------|
+| `/` | Homepage (scorecard, calendario, standings, noticias IA) |
+| `/estadisticas` | Líderes completos |
+| `/bateo-general` | Tabla de bateo + buscador |
+| `/pitcheo-general` | Pitcheo (W sincronizadas al cerrar juego) |
+| `/posiciones` | Standings JJ/G/P/AVE/Racha/U10 |
+| `/calendario` | Calendario mensual |
+| `/noticias` | Crónicas IA + multimedia |
+| `/juego?id=N` | Detalle partido + box score |
 
 ---
 

@@ -10,6 +10,7 @@ $PROJECT_ROOT = dirname($ROOT_DIR);
 require_once $ROOT_DIR . "/src/Support/Env.php";
 require_once $ROOT_DIR . "/src/Support/SqlDialect.php";
 require_once $ROOT_DIR . "/src/Support/Database.php";
+require_once $ROOT_DIR . "/src/Support/PublicHelpers.php";
 require_once $ROOT_DIR . "/src/Auth/AdminAuth.php";
 
 lsl_load_env_files([
@@ -318,6 +319,7 @@ function init_local_db(PDO $pdo): void {
   ensure_column($pdo, "player_stats", "SF", "INTEGER DEFAULT 0");
   ensure_column($pdo, "player_stats", "E", "INTEGER DEFAULT 0");
   ensure_column($pdo, "players", "birth_date", "TEXT");
+  ensure_column($pdo, "teams", "manager_name", "TEXT");
 
   $seasonCount = (int)$pdo->query("SELECT COUNT(*) FROM seasons")->fetchColumn();
   if ($seasonCount === 0) {

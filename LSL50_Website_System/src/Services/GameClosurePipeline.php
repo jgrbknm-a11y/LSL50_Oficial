@@ -25,7 +25,8 @@ final class GameClosurePipeline
 
     $autoPublish = lsl_setting($pdo, "ai_publish_mode", "review") === "auto";
     try {
-      $out["ai"] = AiNewsGenerator::generateForGame($pdo, $seasonId, $gameId, $autoPublish);
+      require_once dirname(__DIR__, 2) . "/admin/services/ai_news_generator.php";
+      $out["ai"] = lsl_ai_generate_for_game($pdo, $seasonId, $gameId, $autoPublish);
     } catch (Throwable $e) {
       $out["ai"] = ["ok" => false, "error" => $e->getMessage()];
     }

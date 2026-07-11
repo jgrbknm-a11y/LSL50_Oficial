@@ -4,11 +4,10 @@
  *
  * Usage:
  *   php -S 127.0.0.1:8080 -t LSL50_Website_System LSL50_Website_System/router.php
- *
- * Blocks direct HTTP access to secrets and SQLite under /data and /.env*.
  */
 
 $uri = urldecode(parse_url($_SERVER["REQUEST_URI"] ?? "/", PHP_URL_PATH) ?: "/");
+$uri = rtrim($uri, "/") ?: "/";
 
 $blocked =
   str_starts_with($uri, "/data")
@@ -27,6 +26,38 @@ $file = $docRoot . $uri;
 
 if ($uri !== "/" && is_file($file)) {
   return false;
+}
+
+$routes = [
+  "/" => "index.php",
+  "/equipos" => "equipos.php",
+  "/calendario" => "calendario.php",
+  "/posiciones" => "posiciones.php",
+  "/estadisticas" => "estadisticas.php",
+  "/bateo-general" => "bateo-general.php",
+  "/pitcheo-general" => "pitcheo-general.php",
+  "/noticias" => "noticias.php",
+  "/juego" => "juego.php",
+  "/admin" => "admin/index.php",
+];
+
+if (isset($routes[$uri])) {
+  require __DIR__ . "/" . $routes[$uri];
+  return true;
+}
+
+if (preg_match('#^/noticias/([a-z0-9-]+)$#', $uri, $m)) {
+  $_GET["slug"] = $m[1];
+  require __DIR__ . "/noticia.php";
+  return true;
+}
+
+if ($uri === "/news.php" || str_starts_with($uri, "/news.php")) {
+  $id = (int)($_GET["id"] ?? 0);
+  if ($id > 0) {
+    header("Location: /noticias/noticia-{$id}", true, 301);
+    exit;
+  }
 }
 
 return false;
