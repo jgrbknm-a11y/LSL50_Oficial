@@ -13,6 +13,7 @@ require_once __DIR__ . "/../admin/services/ai_news_generator.php";
 use Lsl50\Api\V1\ApiSanitizer;
 use Lsl50\Api\V1\LeadersResource;
 use Lsl50\Api\V1\StandingsResource;
+use Lsl50\Services\AiNewsGenerator;
 use Lsl50\Services\PublicStatsService;
 use Lsl50\Services\StatsEngine;
 
@@ -118,7 +119,7 @@ if ($gameId > 0) {
   assert_public(isset($box["teams"]) && is_array($box["teams"]), "gameBoxSummary has teams");
   assert_public(array_key_exists("mvp", $box), "gameBoxSummary has mvp key");
 
-  $prompt = lsl_ai_build_sports_prompt([
+  $prompt = AiNewsGenerator::buildSportsPrompt([
     "game" => [
       "game_date" => "2026-07-10",
       "away_name" => "Visitante",
@@ -136,7 +137,7 @@ if ($gameId > 0) {
   assert_public(str_contains($prompt, "MVP") || str_contains($prompt, "mvp_sugerido"), "AI prompt references MVP");
   assert_public(str_contains($prompt, "Visitante"), "AI prompt includes away team");
 
-  $localNote = lsl_ai_build_local_note([
+  $localNote = AiNewsGenerator::buildLocalNote([
     "game" => [
       "home_name" => "Local",
       "away_name" => "Visitante",
@@ -151,7 +152,8 @@ if ($gameId > 0) {
   assert_public(str_contains($localNote["body"], "Juan Pérez"), "local note mentions winning pitcher");
 }
 
-assert_public(function_exists("lsl_ai_generate_for_game"), "lsl_ai_generate_for_game exists");
+assert_public(method_exists(AiNewsGenerator::class, "generateForGame"), "AiNewsGenerator generateForGame exists");
+assert_public(method_exists(AiNewsGenerator::class, "buildContext"), "AiNewsGenerator buildContext exists");
 
 echo "\n=== Summary ===\n";
 echo "Passed: $passed\n";

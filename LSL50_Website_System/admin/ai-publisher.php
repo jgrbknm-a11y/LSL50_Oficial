@@ -1,19 +1,20 @@
 <?php
 require __DIR__ . "/../config.php";
+require_once __DIR__ . "/../src/autoload.php";
 require_admin();
+
+use Lsl50\Services\AiNewsGenerator;
 
 $pdo = db();
 $season = active_season($pdo);
 $seasonId = (int)$season["id"];
 
-function ai_fmt_stat($value, string $type = "int"): string {
-  return $type === "avg" ? number_format((float)$value, 3) : (string)(int)$value;
-}
-
 function ai_http_json(string $method, string $url, array $headers = [], ?array $payload = null): array {
   $body = $payload === null ? null : json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
   $headerLines = array_merge(["Accept: application/json"], $headers);
-  if ($body !== null) $headerLines[] = "Content-Type: application/json";
+  if ($body !== null) {
+    $headerLines[] = "Content-Type: application/json";
+  }
 
   if (function_exists("curl_init")) {
     $ch = curl_init($url);
@@ -24,12 +25,16 @@ function ai_http_json(string $method, string $url, array $headers = [], ?array $
       CURLOPT_TIMEOUT => 20,
       CURLOPT_CONNECTTIMEOUT => 8,
     ]);
-    if ($body !== null) curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+    if ($body !== null) {
+      curl_setopt($ch, CURLOPT_POSTFIELDS, $body);
+    }
     $raw = curl_exec($ch);
     $error = curl_error($ch);
     $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
     curl_close($ch);
-    if ($raw === false) return ["ok" => false, "status" => 0, "error" => $error ?: "No se pudo conectar."];
+    if ($raw === false) {
+      return ["ok" => false, "status" => 0, "error" => $error ?: "No se pudo conectar."];
+    }
   } else {
     $context = stream_context_create([
       "http" => [
@@ -42,21 +47,29 @@ function ai_http_json(string $method, string $url, array $headers = [], ?array $
     ]);
     $raw = @file_get_contents($url, false, $context);
     $status = 0;
-    if (isset($http_response_header[0]) && preg_match('/\s(\d{3})\s/', $http_response_header[0], $m)) $status = (int)$m[1];
-    if ($raw === false) return ["ok" => false, "status" => $status, "error" => "No se pudo conectar."];
+    if (isset($http_response_header[0]) && preg_match('/\s(\d{3})\s/', $http_response_header[0], $m)) {
+      $status = (int)$m[1];
+    }
+    if ($raw === false) {
+      return ["ok" => false, "status" => $status, "error" => "No se pudo conectar."];
+    }
   }
 
   $data = json_decode($raw, true);
-  if (!is_array($data)) return ["ok" => false, "status" => $status, "error" => "Respuesta inválida.", "raw" => $raw];
+  if (!is_array($data)) {
+    return ["ok" => false, "status" => $status, "error" => "Respuesta inválida.", "raw" => $raw];
+  }
   if ($status < 200 || $status >= 300) {
-    $message = $data["error"]["message"] ?? $data["error"]["errors"][0]["message"] ?? $data["error"]["message"] ?? "Error API.";
+    $message = $data["error"]["message"] ?? $data["error"]["errors"][0]["message"] ?? "Error API.";
     return ["ok" => false, "status" => $status, "error" => $message, "data" => $data];
   }
   return ["ok" => true, "status" => $status, "data" => $data];
 }
 
 function ai_parse_youtube_handle(string $channelUrl): string {
-  if (preg_match('~@([A-Za-z0-9._-]+)~', $channelUrl, $m)) return "@" . $m[1];
+  if (preg_match('~@([A-Za-z0-9._-]+)~', $channelUrl, $m)) {
+    return "@" . $m[1];
+  }
   return trim($channelUrl);
 }
 
@@ -68,11 +81,17 @@ function ai_youtube_recent_videos(string $apiKey, string $channelUrl, int $limit
     "key" => $apiKey,
   ]);
   $channelResponse = ai_http_json("GET", $channelApi);
-  if (!$channelResponse["ok"]) return $channelResponse + ["videos" => []];
+  if (!$channelResponse["ok"]) {
+    return $channelResponse + ["videos" => []];
+  }
   $items = $channelResponse["data"]["items"] ?? [];
-  if (!$items) return ["ok" => false, "status" => 404, "error" => "No se encontró el canal con ese handle.", "videos" => []];
+  if (!$items) {
+    return ["ok" => false, "status" => 404, "error" => "No se encontró el canal con ese handle.", "videos" => []];
+  }
   $channelId = $items[0]["id"] ?? "";
-  if ($channelId === "") return ["ok" => false, "status" => 404, "error" => "El canal no devolvió ID.", "videos" => []];
+  if ($channelId === "") {
+    return ["ok" => false, "status" => 404, "error" => "El canal no devolvió ID.", "videos" => []];
+  }
 
   $searchApi = "https://www.googleapis.com/youtube/v3/search?" . http_build_query([
     "part" => "snippet",
@@ -83,11 +102,15 @@ function ai_youtube_recent_videos(string $apiKey, string $channelUrl, int $limit
     "key" => $apiKey,
   ]);
   $videoResponse = ai_http_json("GET", $searchApi);
-  if (!$videoResponse["ok"]) return $videoResponse + ["videos" => []];
+  if (!$videoResponse["ok"]) {
+    return $videoResponse + ["videos" => []];
+  }
   $videos = [];
   foreach (($videoResponse["data"]["items"] ?? []) as $item) {
     $videoId = $item["id"]["videoId"] ?? "";
-    if ($videoId === "") continue;
+    if ($videoId === "") {
+      continue;
+    }
     $videos[] = [
       "id" => $videoId,
       "url" => "https://www.youtube.com/watch?v=" . $videoId,
@@ -98,209 +121,6 @@ function ai_youtube_recent_videos(string $apiKey, string $channelUrl, int $limit
     ];
   }
   return ["ok" => true, "status" => 200, "channel_id" => $channelId, "videos" => $videos];
-}
-
-function ai_openai_text_from_response(array $data): string {
-  if (isset($data["output_text"]) && is_string($data["output_text"])) return trim($data["output_text"]);
-  $chunks = [];
-  foreach (($data["output"] ?? []) as $item) {
-    foreach (($item["content"] ?? []) as $content) {
-      if (($content["type"] ?? "") === "output_text" && isset($content["text"])) $chunks[] = $content["text"];
-    }
-  }
-  return trim(implode("\n", $chunks));
-}
-
-function ai_game_context(PDO $pdo, int $gameId, int $seasonId): ?array {
-  $stmt = $pdo->prepare("SELECT g.*, ht.name home_name, at.name away_name,
-      " . lsl_sql_full_name("wp") . " winning_pitcher_name
-    FROM games g
-    JOIN teams ht ON ht.id=g.home_team_id
-    JOIN teams at ON at.id=g.away_team_id
-    LEFT JOIN players wp ON wp.id=g.winning_pitcher_id
-    WHERE g.id=? AND COALESCE(g.season_id, $seasonId) = $seasonId");
-  $stmt->execute([$gameId]);
-  $game = $stmt->fetch();
-  if (!$game) return null;
-
-  $hitExpr = SqlDialect::greatest("gps.H", "gps.dbl + gps.tpl + gps.HR");
-  $leaders = $pdo->prepare("SELECT " . lsl_sql_full_name("p") . " player_name, p.number, t.name team_name,
-      gps.AB, {$hitExpr} H, gps.dbl, gps.tpl, gps.R, gps.RBI, gps.HR, gps.BB, gps.SO, gps.SB, gps.HBP, gps.SH, gps.SF, gps.E,
-      (({$hitExpr} - (gps.dbl + gps.tpl + gps.HR)) + gps.dbl*2 + gps.tpl*3 + gps.HR*4) TB
-    FROM game_player_stats gps
-    JOIN players p ON p.id=gps.player_id
-    JOIN teams t ON t.id=gps.team_id
-    WHERE gps.game_id=?
-    ORDER BY gps.HR DESC, gps.RBI DESC, {$hitExpr} DESC, TB DESC, gps.R DESC, p.last_name, p.first_name
-    LIMIT 5");
-  $leaders->execute([$gameId]);
-
-  $teamRows = $pdo->prepare("SELECT t.name team_name, SUM(gps.R) runs, SUM({$hitExpr}) hits, SUM(gps.E) errors, SUM(gps.HR) hrs
-    FROM game_player_stats gps
-    JOIN teams t ON t.id=gps.team_id
-    WHERE gps.game_id=?
-    GROUP BY t.id, t.name
-    ORDER BY t.name");
-  $teamRows->execute([$gameId]);
-
-  $plays = $pdo->prepare("SELECT e.*, bt.name batting_team, " . lsl_sql_full_name("b") . " batter_name,
-      " . lsl_sql_full_name("r1") . " runner_1b_name,
-      " . lsl_sql_full_name("r2") . " runner_2b_name,
-      " . lsl_sql_full_name("r3") . " runner_3b_name
-    FROM game_play_events e
-    JOIN teams bt ON bt.id=e.batting_team_id
-    JOIN players b ON b.id=e.batter_id
-    LEFT JOIN players r1 ON r1.id=e.runner_1b_id
-    LEFT JOIN players r2 ON r2.id=e.runner_2b_id
-    LEFT JOIN players r3 ON r3.id=e.runner_3b_id
-    WHERE e.game_id=?
-    ORDER BY e.inning, CASE e.half WHEN 'top' THEN 0 ELSE 1 END, e.id
-    LIMIT 80");
-  $plays->execute([$gameId]);
-
-  return [
-    "game" => $game,
-    "leaders" => $leaders->fetchAll(),
-    "teams" => $teamRows->fetchAll(),
-    "plays" => $plays->fetchAll(),
-  ];
-}
-
-function ai_build_openai_note(array $context, int $clipSeconds, string $apiKey, string $model, string $style, string $videoUrl = "", array $videoMeta = []): array {
-  $game = $context["game"];
-  $payload = [
-    "game" => [
-      "home" => $game["home_name"],
-      "away" => $game["away_name"],
-      "final_home" => (int)$game["final_home"],
-      "final_away" => (int)$game["final_away"],
-      "date" => $game["game_date"],
-      "winning_pitcher" => $game["winning_pitcher_name"] ?: null,
-    ],
-    "team_totals" => $context["teams"],
-    "leaders" => $context["leaders"],
-    "play_by_play" => $context["plays"] ?? [],
-    "video" => [
-      "url" => $videoUrl,
-      "title" => $videoMeta["title"] ?? "",
-      "description" => $videoMeta["description"] ?? "",
-    ],
-  ];
-  $prompt = "Eres el publicador oficial de Legends Softball League 50+ en Broward, Florida.\n"
-    . "Redacta una nota deportiva profesional en español usando solamente estos datos oficiales.\n"
-    . "Estilo editorial: $style\n"
-    . "Devuelve solo JSON válido con estas claves: title, summary, body, clip_start_seconds, clip_end_seconds, highlight_reason.\n"
-    . "El body debe tener 3 a 5 párrafos breves. No inventes jugadas que no estén en los datos.\n"
-    . "Si hay video, sugiere un clip de máximo $clipSeconds segundos basado en la figura estadística o el momento más probable.\n\n"
-    . json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-  $response = ai_http_json("POST", "https://api.openai.com/v1/responses", [
-    "Authorization: Bearer " . $apiKey,
-  ], [
-    "model" => $model ?: "gpt-4.1-mini",
-    "input" => [
-      [
-        "role" => "system",
-        "content" => "Eres un editor deportivo cuidadoso. Respondes en JSON válido y no inventas datos.",
-      ],
-      [
-        "role" => "user",
-        "content" => $prompt,
-      ],
-    ],
-  ]);
-  if (!$response["ok"]) throw new RuntimeException($response["error"] ?? "OpenAI no respondió.");
-  $text = ai_openai_text_from_response($response["data"]);
-  $text = preg_replace('/^```json\s*|\s*```$/', "", trim($text));
-  $note = json_decode($text, true);
-  if (!is_array($note)) throw new RuntimeException("OpenAI respondió, pero el JSON no se pudo leer.");
-  return [
-    "title" => trim((string)($note["title"] ?? "")) ?: "Nota LSL50",
-    "summary" => trim((string)($note["summary"] ?? "")),
-    "body" => trim((string)($note["body"] ?? "")),
-    "clip_start_seconds" => max(0, (int)($note["clip_start_seconds"] ?? 0)),
-    "clip_end_seconds" => max(15, min(3600, (int)($note["clip_end_seconds"] ?? $clipSeconds))),
-    "highlight_reason" => trim((string)($note["highlight_reason"] ?? "")) ?: "Clip sugerido por impacto estadístico del juego.",
-  ];
-}
-
-function ai_build_local_note(array $context, int $clipSeconds): array {
-  $game = $context["game"];
-  $home = $game["home_name"];
-  $away = $game["away_name"];
-  $homeRuns = (int)$game["final_home"];
-  $awayRuns = (int)$game["final_away"];
-  $winner = $homeRuns === $awayRuns ? "Empate" : ($homeRuns > $awayRuns ? $home : $away);
-  $loser = $homeRuns === $awayRuns ? "" : ($homeRuns > $awayRuns ? $away : $home);
-  $score = "$home $homeRuns, $away $awayRuns";
-  $title = $homeRuns === $awayRuns
-    ? "$home y $away terminan empatados en la jornada LSL50"
-    : "$winner supera a $loser en la jornada LSL50";
-
-  $leaders = $context["leaders"];
-  $top = $leaders[0] ?? null;
-  $topLine = "";
-  if ($top) {
-    $parts = [];
-    if ((int)$top["H"] > 0) $parts[] = (int)$top["H"] . " hits";
-    if ((int)$top["RBI"] > 0) $parts[] = (int)$top["RBI"] . " impulsadas";
-    if ((int)$top["R"] > 0) $parts[] = (int)$top["R"] . " anotadas";
-    if ((int)$top["HR"] > 0) $parts[] = (int)$top["HR"] . " jonrones";
-    $topLine = $parts ? implode(", ", $parts) : "aporte clave en el partido";
-  }
-  $summary = $top
-    ? "La jornada dejó como figura a " . $top["player_name"] . " de " . $top["team_name"] . ", con " . $topLine . "."
-    : "La jornada quedó registrada en el cuaderno oficial y actualizó automáticamente las posiciones y líderes de la liga.";
-
-  $body = [];
-  $body[] = "Resultado final: $score.";
-  if ($homeRuns !== $awayRuns) {
-    $body[] = "$winner logró imponer su ofensiva y cerró el juego con ventaja sobre $loser.";
-  } else {
-    $body[] = "Ambos equipos sostuvieron un partido parejo que terminó sin ganador.";
-  }
-  if ($game["winning_pitcher_name"]) {
-    $body[] = "El pitcher ganador registrado fue " . $game["winning_pitcher_name"] . ".";
-  }
-  if ($leaders) {
-    $body[] = "Jugadores destacados:";
-    foreach ($leaders as $row) {
-      $body[] = "- " . ($row["number"] ? "#" . $row["number"] . " " : "") . $row["player_name"] . " (" . $row["team_name"] . "): " . (int)$row["H"] . " H, " . (int)$row["RBI"] . " RBI, " . (int)$row["R"] . " R, " . (int)$row["HR"] . " HR.";
-    }
-  }
-  if (!empty($context["plays"])) {
-    $body[] = "El cuaderno jugada por jugada incluye avances de corredores para apoyar la crónica del partido.";
-  }
-  $body[] = "Esta nota fue preparada a partir de las estadísticas oficiales capturadas en el cuaderno de anotación LSL50.";
-
-  return [
-    "title" => $title,
-    "summary" => $summary,
-    "body" => implode("\n\n", $body),
-    "clip_start_seconds" => 0,
-    "clip_end_seconds" => $clipSeconds,
-    "highlight_reason" => $top
-      ? "Clip sugerido: buscar el turno ofensivo más importante de " . $top["player_name"] . ", por ser el jugador de mayor impacto estadístico del juego."
-      : "Clip sugerido: seleccionar la jugada decisiva del cierre del partido.",
-  ];
-}
-
-function ai_upsert_note(PDO $pdo, int $seasonId, int $gameId, array $note, string $videoUrl, string $provider): void {
-  SqlDialect::upsertAiGameNote(
-    $pdo,
-    $seasonId,
-    $gameId,
-    "draft",
-    $note["title"],
-    $note["summary"],
-    $note["body"],
-    $videoUrl,
-    (int)$note["clip_start_seconds"],
-    (int)$note["clip_end_seconds"],
-    $note["highlight_reason"],
-    $provider,
-    null
-  );
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
@@ -352,41 +172,29 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
   if ($action === "generate_note") {
     $gameId = (int)post("game_id");
-    $context = ai_game_context($pdo, $gameId, $seasonId);
-    if (!$context) {
-      flash("No se encontró el juego.");
-    } elseif (!$context["leaders"]) {
-      flash("Ese juego todavía no tiene estadísticas guardadas en el cuaderno.");
-    } else {
-      $clipSeconds = (int)lsl_setting($pdo, "ai_clip_seconds", "45");
-      $videoUrl = trim(post("video_url"));
-      $provider = "local-stats";
-      $note = null;
-      $openAiKey = lsl_setting($pdo, "openai_api_key", "");
-      if ($openAiKey !== "") {
-        try {
-          $recentVideos = json_decode(lsl_setting($pdo, "ai_youtube_recent_videos", "[]"), true) ?: [];
-          $videoMeta = [];
-          foreach ($recentVideos as $video) {
-            if (($video["url"] ?? "") === $videoUrl) $videoMeta = $video;
-          }
-          $note = ai_build_openai_note(
-            $context,
-            $clipSeconds,
-            $openAiKey,
-            lsl_setting($pdo, "openai_model", "gpt-4.1-mini"),
-            lsl_setting($pdo, "ai_editorial_style", "Profesional deportivo, claro, positivo y breve."),
-            $videoUrl,
-            $videoMeta
-          );
-          $provider = "openai";
-        } catch (Throwable $e) {
-          flash("OpenAI no pudo generar la nota; se usó redacción local. Detalle: " . $e->getMessage());
-        }
+    $videoUrl = trim(post("video_url"));
+    $videoMeta = [];
+    $recentVideos = json_decode(lsl_setting($pdo, "ai_youtube_recent_videos", "[]"), true) ?: [];
+    foreach ($recentVideos as $video) {
+      if (($video["url"] ?? "") === $videoUrl) {
+        $videoMeta = $video;
+        break;
       }
-      if (!$note) $note = ai_build_local_note($context, $clipSeconds);
-      ai_upsert_note($pdo, $seasonId, $gameId, $note, $videoUrl, $provider);
-      flash($provider === "openai" ? "Borrador generado con OpenAI y estadísticas oficiales." : "Borrador generado con estadísticas oficiales.");
+    }
+
+    $result = AiNewsGenerator::generateForGame($pdo, $seasonId, $gameId, [
+      "video_url" => $videoUrl,
+      "video_meta" => $videoMeta,
+      "status" => "draft",
+      "require_stats" => true,
+    ]);
+
+    if (!$result["ok"]) {
+      flash($result["error"] ?? "No se pudo generar la nota.");
+    } elseif (($result["provider"] ?? "") === "openai") {
+      flash("Borrador generado con OpenAI y estadísticas oficiales.");
+    } else {
+      flash("Borrador generado con estadísticas oficiales (redacción local).");
     }
   }
 
