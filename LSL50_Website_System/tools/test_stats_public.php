@@ -10,6 +10,9 @@ require __DIR__ . "/../config.php";
 require __DIR__ . "/../src/autoload.php";
 require_once __DIR__ . "/../admin/services/ai_news_generator.php";
 
+use Lsl50\Api\V1\ApiSanitizer;
+use Lsl50\Api\V1\LeadersResource;
+use Lsl50\Api\V1\StandingsResource;
 use Lsl50\Services\PublicStatsService;
 use Lsl50\Services\StatsEngine;
 
@@ -92,11 +95,22 @@ if ($calendar) {
 $byMonth = PublicStatsService::calendarByMonth($pdo, $seasonId);
 assert_public(is_array($byMonth), "calendarByMonth returns array");
 
-$apiPayload = \Lsl50\Api\V1\StandingsResource::build($pdo, ["id" => $seasonId, "name" => (string)$season["name"]], true);
+$apiPayload = StandingsResource::build($pdo, ["id" => $seasonId, "name" => (string)$season["name"]], true);
 assert_public(($apiPayload["ok"] ?? false) === true, "StandingsResource build ok");
 assert_public(isset($apiPayload["standings"][0]["form"]["streak"]), "API standings has streak");
 assert_public(isset($apiPayload["standings"][0]["form"]["last_10"]), "API standings has last_10");
 assert_public(isset($apiPayload["standings"][0]["record"]["pct_display"]), "API standings has pct_display");
+
+$leadersPayload = LeadersResource::build($pdo, ["id" => $seasonId, "name" => (string)$season["name"]], 1, "legacy");
+assert_public(($leadersPayload["ok"] ?? false) === true, "LeadersResource build ok");
+assert_public(isset($leadersPayload["leaders"]["avg"]), "API leaders has avg key");
+assert_public(isset($leadersPayload["leaders"]["avg"]["department"]["abbr"]), "API leaders avg abbr");
+assert_public(array_key_exists("leader", $leadersPayload["leaders"]["avg"]), "API leaders avg leader slot");
+assert_public(isset($leadersPayload["meta"]["league_games"]), "API leaders league_games meta");
+
+$leadersFull = LeadersResource::build($pdo, ["id" => $seasonId, "name" => (string)$season["name"]], 3, "full");
+assert_public(count($leadersFull["leaders"]) >= 10, "LeadersResource full scope has 10+ departments");
+assert_public(ApiSanitizer::clampInt("5", 1, 10, 1) === 5, "ApiSanitizer clampInt");
 
 $gameId = (int)$pdo->query("SELECT id FROM games ORDER BY id DESC LIMIT 1")->fetchColumn();
 if ($gameId > 0) {

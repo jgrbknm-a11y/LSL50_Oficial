@@ -41,3 +41,24 @@ function api_v1_query_bool(string $key, bool $default = false): bool
   }
   return $default;
 }
+
+function api_v1_query_int(string $key, int $default, int $min, int $max): int
+{
+  if (!isset($_GET[$key])) {
+    return $default;
+  }
+  if (!is_numeric($_GET[$key])) {
+    return $default;
+  }
+  $value = (int)$_GET[$key];
+  return max($min, min($max, $value));
+}
+
+function api_v1_query_scope(string $key, string $default = "legacy"): string
+{
+  if (!isset($_GET[$key])) {
+    return $default;
+  }
+  $raw = strtolower(trim((string)$_GET[$key]));
+  return in_array($raw, ["legacy", "full"], true) ? $raw : $default;
+}

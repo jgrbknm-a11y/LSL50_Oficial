@@ -43,6 +43,7 @@ $routes = [
   "/juego" => "juego.php",
   "/admin" => "admin/index.php",
   "/api/v1/standings" => "api/v1/standings.php",
+  "/api/v1/leaders" => "api/v1/leaders.php",
 ];
 
 if (isset($routes[$uri])) {
