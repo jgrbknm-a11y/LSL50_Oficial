@@ -5,65 +5,6 @@ $season = active_season($pdo);
 $seasonId = (int)$season['id'];
 $teams = $pdo->query("SELECT id,name FROM teams ORDER BY name")->fetchAll();
 
-function recalc_stats($pdo, $player_id, $seasonId){
-  $seasonId = (int)$seasonId;
-  $stmt=$pdo->prepare("SELECT COALESCE(SUM(CASE WHEN (AB + BB + HBP + SH + SF) > 0 THEN 1 ELSE 0 END),0) GP, COALESCE(SUM(AB),0) AB, COALESCE(SUM(H),0) H, COALESCE(SUM(dbl),0) dbl, COALESCE(SUM(tpl),0) tpl, COALESCE(SUM(R),0) R, COALESCE(SUM(RBI),0) RBI, COALESCE(SUM(HR),0) HR, COALESCE(SUM(BB),0) BB, COALESCE(SUM(SO),0) SO, COALESCE(SUM(SB),0) SB, COALESCE(SUM(HBP),0) HBP, COALESCE(SUM(SH),0) SH, COALESCE(SUM(SF),0) SF, COALESCE(SUM(E),0) E FROM game_player_stats WHERE player_id=? AND COALESCE(season_id, $seasonId) = $seasonId");
-  $stmt->execute([$player_id]); $row=$stmt->fetch();
-  $AB = max((int)$row['AB'],0); $rawH=(int)$row['H']; $DBL=(int)$row['dbl']; $TPL=(int)$row['tpl']; $HR=(int)$row['HR']; $BB=(int)$row['BB']; $HBP=(int)$row['HBP']; $SH=(int)$row['SH']; $SF=(int)$row['SF']; $E=(int)$row['E'];
-  $extraBaseHits = $DBL + $TPL + $HR; $H = max($rawH, $extraBaseHits); $SNG = max($H - $extraBaseHits, 0); $TB = $SNG + $DBL*2 + $TPL*3 + $HR*4;
-  $OBP_DEN = $AB + $BB + $HBP + $SF;
-  $AVG = $AB>0 ? round($H/$AB,3) : 0; $OBP = $OBP_DEN>0 ? round(($H+$BB+$HBP)/$OBP_DEN,3) : 0; $SLG = $AB>0 ? round($TB/$AB,3) : 0;
-  try {
-    $pdo->prepare("INSERT INTO player_stats (player_id,games_played,AB,H,dbl,tpl,TB,R,RBI,HR,BB,SO,SB,HBP,SH,SF,E,AVG,OBP,SLG)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-      ON CONFLICT(player_id) DO UPDATE SET games_played=excluded.games_played, AB=excluded.AB, H=excluded.H, dbl=excluded.dbl, tpl=excluded.tpl, TB=excluded.TB, R=excluded.R, RBI=excluded.RBI, HR=excluded.HR, BB=excluded.BB, SO=excluded.SO, SB=excluded.SB, HBP=excluded.HBP, SH=excluded.SH, SF=excluded.SF, E=excluded.E, AVG=excluded.AVG, OBP=excluded.OBP, SLG=excluded.SLG, updated_at=CURRENT_TIMESTAMP")
-      ->execute([$player_id,(int)$row['GP'],$AB,$H,$DBL,$TPL,$TB,(int)$row['R'],(int)$row['RBI'],$HR,$BB,(int)$row['SO'],(int)$row['SB'],$HBP,$SH,$SF,$E,$AVG,$OBP,$SLG]);
-  } catch (Throwable $e) { /* si falta columna, ignoramos */ }
-}
-
-function stat_int($value): int {
-  return max((int)$value, 0);
-}
-
-function recalc_team_stats(PDO $pdo, int $seasonId): void {
-  try {
-    $pdo->exec("UPDATE team_stats SET wins=0, losses=0, ties=0, runs_for=0, runs_against=0, updated_at=CURRENT_TIMESTAMP");
-    $teamIds = $pdo->query("SELECT id FROM teams")->fetchAll();
-    $ensure = $pdo->prepare("INSERT OR IGNORE INTO team_stats (team_id,wins,losses,ties,runs_for,runs_against) VALUES (?,0,0,0,0,0)");
-    foreach ($teamIds as $team) $ensure->execute([(int)$team["id"]]);
-
-    $seasonId = (int)$seasonId;
-    $games = $pdo->query("SELECT * FROM games g
-      WHERE COALESCE(g.season_id, $seasonId) = $seasonId
-        AND (
-          EXISTS (SELECT 1 FROM game_player_stats gps WHERE gps.game_id = g.id)
-          OR COALESCE(g.result_type, '') = 'forfeit'
-          OR COALESCE(g.status, '') = 'final'
-        )");
-    foreach ($games->fetchAll() as $g) {
-      $home = (int)$g["home_team_id"];
-      $away = (int)$g["away_team_id"];
-      $homeRuns = (int)$g["final_home"];
-      $awayRuns = (int)$g["final_away"];
-
-      foreach ([[$home, $homeRuns, $awayRuns], [$away, $awayRuns, $homeRuns]] as $row) {
-        [$teamId, $runsFor, $runsAgainst] = $row;
-        $pdo->prepare("UPDATE team_stats SET runs_for = runs_for + ?, runs_against = runs_against + ?, updated_at=CURRENT_TIMESTAMP WHERE team_id=?")
-          ->execute([$runsFor, $runsAgainst, $teamId]);
-      }
-      if ($homeRuns > $awayRuns) {
-        $pdo->prepare("UPDATE team_stats SET wins=wins+1, updated_at=CURRENT_TIMESTAMP WHERE team_id=?")->execute([$home]);
-        $pdo->prepare("UPDATE team_stats SET losses=losses+1, updated_at=CURRENT_TIMESTAMP WHERE team_id=?")->execute([$away]);
-      } elseif ($awayRuns > $homeRuns) {
-        $pdo->prepare("UPDATE team_stats SET wins=wins+1, updated_at=CURRENT_TIMESTAMP WHERE team_id=?")->execute([$away]);
-        $pdo->prepare("UPDATE team_stats SET losses=losses+1, updated_at=CURRENT_TIMESTAMP WHERE team_id=?")->execute([$home]);
-      } else {
-        $pdo->prepare("UPDATE team_stats SET ties=ties+1, updated_at=CURRENT_TIMESTAMP WHERE team_id IN (?,?)")->execute([$home, $away]);
-      }
-    }
-  } catch (Throwable $e) { /* si no existe team_stats, ignoramos */ }
-}
-
 if ($_SERVER['REQUEST_METHOD']==='POST') {
   if (post('action')==='create_next_schedule') {
     $nextDateStmt = $pdo->prepare("SELECT MIN(game_date) FROM schedule_entries s
@@ -121,51 +62,14 @@ if ($_SERVER['REQUEST_METHOD']==='POST') {
   }
   if (post('action')==='save_box') {
     $game_id = (int)post('game_id');
-    $g = $pdo->prepare("SELECT * FROM games WHERE id=? AND COALESCE(season_id, $seasonId) = $seasonId");
-    $g->execute([$game_id]);
-    $gameForBox = $g->fetch();
-    if (!$gameForBox) {
-      flash("No se encontró el juego para anotar");
-      header("Location: /admin/games.php"); exit;
-    }
-
     $postedRows = $_POST["rows"] ?? null;
     $payload = $postedRows ? ["rows" => $postedRows] : (json_decode(post('payload'), true) ?: []);
-    $affected = [];
-    $homeRuns = 0;
-    $awayRuns = 0;
-    $winningPitcherId = (int)post("winning_pitcher_id");
-
-    $pdo->beginTransaction();
     try {
-    $pdo->prepare("DELETE FROM game_player_stats WHERE game_id=?")->execute([$game_id]);
-    foreach (($payload['rows'] ?? []) as $row) {
-      $player_id=(int)($row['player_id']??0); $team_id=(int)($row['team_id']??0);
-      if(!$player_id || !$team_id) continue;
-      $AB=stat_int($row['AB']??0); $H=stat_int($row['H']??0); $DBL=stat_int($row['dbl']??0); $TPL=stat_int($row['tpl']??0);
-      $R=stat_int($row['R']??0); $RBI=stat_int($row['RBI']??0); $HR=stat_int($row['HR']??0); $BB=stat_int($row['BB']??0); $SO=stat_int($row['SO']??0); $SB=stat_int($row['SB']??0); $HBP=stat_int($row['HBP']??0); $SH=stat_int($row['SH']??0); $SF=stat_int($row['SF']??0); $E=stat_int($row['E']??0);
-      if ($team_id === (int)$gameForBox["home_team_id"]) $homeRuns += $R;
-      if ($team_id === (int)$gameForBox["away_team_id"]) $awayRuns += $R;
-      $pdo->prepare("INSERT INTO game_player_stats (season_id,game_id,team_id,player_id,AB,H,dbl,tpl,R,RBI,HR,BB,SO,SB,HBP,SH,SF,E)
-        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")->execute([$seasonId,$game_id,$team_id,$player_id,$AB,$H,$DBL,$TPL,$R,$RBI,$HR,$BB,$SO,$SB,$HBP,$SH,$SF,$E]);
-      $affected[$player_id]=1;
+      lsl_save_game_box($pdo, $seasonId, $game_id, $payload['rows'] ?? [], (int)post("winning_pitcher_id"));
+      flash("Cuaderno guardado: estadísticas, marcador final y posiciones actualizadas");
+    } catch (RuntimeException $e) {
+      flash("No se pudo guardar: " . $e->getMessage());
     }
-    foreach (array_keys($affected) as $pid) recalc_stats($pdo, $pid, $seasonId);
-    $validPitcher = null;
-    if ($winningPitcherId && $homeRuns !== $awayRuns) {
-      $checkPitcher = $pdo->prepare("SELECT id FROM players WHERE id=? AND team_id IN (?, ?)");
-      $checkPitcher->execute([$winningPitcherId, (int)$gameForBox["home_team_id"], (int)$gameForBox["away_team_id"]]);
-      $validPitcher = $checkPitcher->fetchColumn() ? $winningPitcherId : null;
-    }
-    $pdo->prepare("UPDATE games SET final_home=?, final_away=?, winning_pitcher_id=? WHERE id=?")->execute([$homeRuns, $awayRuns, $validPitcher, $game_id]);
-    recalc_team_stats($pdo, $seasonId);
-    $pdo->commit();
-    } catch (Throwable $e) {
-      $pdo->rollBack();
-      throw $e;
-    }
-
-    flash("Cuaderno guardado: estadísticas, marcador final y posiciones actualizadas");
     header("Location: /admin/games.php?tab=scorer&game_id=".$game_id); exit;
   }
 }

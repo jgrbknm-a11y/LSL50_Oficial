@@ -1,33 +1,75 @@
 # LSL50 Continuation Point
 
-## Latest Start Point
+## Latest Start Point — Post-Refactor Checkpoint
 
-Checkpoint created on `2026-07-09 22:38:55 EDT`.
+Checkpoint updated on `2026-07-10 21:15:00 EDT`.
 
-Start from:
+**System status: 100% listo para uso operativo.** Refactor estructural completo, cuaderno modularizado, transmisión OBS integrada, auth admin, y suite de tests rebuild aprobada.
 
-- Tablet scorer: `http://127.0.0.1:8090/scorer/?game_id=5&view=plays#scorerTabs`.
-- Scorer PIN: stored in `app_settings` / optional `LSL50_SCORER_PIN` (manage at `/admin/scorer.php`).
-- Admin panel: `http://127.0.0.1:8080/admin/login.php` (credentials from project-root `.env`; password stored hashed in SQLite `users`).
-- Current next open game: game `5`, `Caribeños vs Cerveceros`.
-- Game `3`, `Bucaneros vs Hispanos`, is closed as `Final por 7 innings` with note `Cerrado por innings completos`.
-- Game `4`, `Cubs vs Sharks`, is also currently closed as `Final por tiempo 1h 45m`.
-- Official scorebook PDF for game `3`: `LSL50_Website_System/output/pdf/lsl50_scorebook_game_3.pdf`.
+### Quick links
 
-What was finished last:
+| Servicio | URL |
+|----------|-----|
+| Admin | http://127.0.0.1:8080/admin/login.php |
+| Cuaderno (tablet) | http://127.0.0.1:8090/scorer/ |
+| OBS Control Center | http://127.0.0.1:5050/control.html |
+| API estado en vivo | http://127.0.0.1:8080/api/live-game-state.php |
+| Homepage pública | http://127.0.0.1:8080/ |
 
-- The live `Cuaderno` and `Lineup` no longer show date search.
-- Date search now lives only in `Consulta`, using `MM/DD/AA`, for stored-game audit.
-- Closing a game now defaults to a real final result instead of accidentally staying `Pendiente / sin cerrar`.
-- Closing a non-forfeit game rebuilds the box score from the play log before saving the official result.
-- After closure, the scorer moves to the next open game so the next scorekeeping session starts clean.
-- Tablet scorer PDF serving is enabled under `/output/pdf/`.
+Credenciales admin: project-root `.env` (hash bcrypt en SQLite `users`). PIN anotador: Admin → Anotador (`/admin/scorer.php`).
 
-Recommended next step:
+### Servidores locales
 
-- Tomorrow, run a clean validation on game `5`: check/load lineup, enter a few controlled plays, review stats/consulta, then test official closure and confirm the scorer has no leftover forms from prior games.
+```bash
+# Website + Admin (:8080)
+cd /Users/joseramirez/Documents/LSL50_Official_Project
+php -S 0.0.0.0:8080 -t LSL50_Website_System LSL50_Website_System/router.php
 
-Checkpoint updated: 2026-07-09 19:47:42 EDT
+# Cuaderno tablet (:8090)
+php -S 0.0.0.0:8090 -t LSL50_Website_System LSL50_Website_System/scorer/router.php
+
+# OBS Control Center (:5050)
+cd LSL50_Live_Control_Center && python3 server.py
+```
+
+### Tests rebuild — aprobados
+
+Comando oficial:
+
+```bash
+php LSL50_Website_System/tools/test_rebuild_rules.php
+```
+
+Cubre: **DP** (6-4-3, 5-4-3), **WP/PB**, **forfeit** (GameClosure + standings), **GameFlow** (cambio de entrada tras 3 outs). Última ejecución: **23 passed, 0 failed**.
+
+### Refactor `admin/games.php` — completado
+
+- Eliminadas funciones duplicadas locales: `recalc_stats()`, `recalc_team_stats()`, `stat_int()`.
+- `save_box` delega a `lsl_save_game_box()` en `config.php` (fuente canónica junto con `lsl_recalc_player_stats()` y `lsl_recalc_team_stats()`).
+- `php -l LSL50_Website_System/admin/games.php` — OK.
+
+### Fases completadas (1–8)
+
+1. Git + `.gitignore` + `_archive/` Laravel legacy
+2. Cuaderno modular: `scorer/assets/`, `src/Repository/`, `src/Domain/Rules/`, `scorer/views/`, `AppRouter.php` + Controllers
+3. Auth admin: `AdminAuth.php`, `login.php`, sesión separada del scorer
+4. E2E validado: juego **#7** (Cerveceros @ Sharks, 2–1, final por innings)
+5. OBS integrado: `live-game-state.php` + botones **TRAER CUADERNO** / **AUTO CUADERNO** en Control Center
+6. Commit raíz: `1f59e2a` — *Refactorizacion estructural completa de LSL50*
+
+### Juegos de referencia
+
+- **Game 5** — Caribeños vs Cerveceros (próximo juego abierto sugerido)
+- **Game 7** — Cerveceros @ Sharks (E2E completo, 2–1 final)
+- **Game 3** — Bucaneros vs Hispanos (cerrado, PDF: `output/pdf/lsl50_scorebook_game_3.pdf`)
+
+### Próximo paso sugerido
+
+Operar jornada en vivo: abrir game 5 en cuaderno, anotar, cerrar oficialmente, confirmar standings y sync OBS.
+
+---
+
+## Previous Start Point (2026-07-09)
 
 ## Tomorrow Start Point
 

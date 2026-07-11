@@ -2,42 +2,488 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LSL50 Live Control Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'Roboto', 'system-ui', 'sans-serif'] },
+      },
+    },
+  };
+</script>
 <style>
-:root{--navy:#061b3b;--panel:#071320;--gold:#e9bb45;--red:#d7333f;--green:#58c56f;--white:#f7fbff;--muted:#9fb1c8;--blue:#1e65aa}
-*{box-sizing:border-box} body{margin:0;background:#03070c;color:var(--white);font-family:Arial,Helvetica,sans-serif;padding:14px}
-.header{height:68px;border:1px solid #29445f;border-radius:8px;background:linear-gradient(90deg,#071320,#061b3b);display:flex;align-items:center;padding:0 18px;margin-bottom:12px}
-.logo{font-size:36px;font-weight:900;font-style:italic}.live{background:var(--red);padding:5px 10px;border-radius:4px;margin-left:8px;font-weight:900}.title{margin-left:28px}.title b{font-size:20px}.title div{color:var(--muted);font-size:13px}.status{margin-left:auto;color:var(--green);font-weight:900}
-.grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px}.panel{background:linear-gradient(180deg,#071320,#05101c);border:1px solid #8d6727;border-radius:8px;padding:12px}h2{font-size:17px;margin:0 0 12px;text-transform:uppercase}
-.preview{height:405px;background:#000;border-radius:8px;overflow:hidden;border:1px solid #29445f}.preview iframe{width:1280px;height:720px;border:0;transform:scale(.54);transform-origin:top left}
-.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}label{font-size:12px;color:var(--muted);display:block;margin-bottom:5px}input,select{width:100%;background:#071c32;border:1px solid #31516e;border-radius:6px;color:white;padding:10px;font-size:16px;font-weight:800}
-button{border:0;border-radius:6px;padding:12px 14px;color:white;font-weight:900;cursor:pointer}.gold{background:linear-gradient(180deg,#f0bd42,#b98317)}.blue{background:linear-gradient(180deg,#2672bd,#154778)}.red{background:linear-gradient(180deg,#e2434d,#9f1e26)}
-.buttons{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px}.bases{display:flex;gap:15px;align-items:center}.baseCheck{display:flex;gap:6px;align-items:center;font-weight:900}.baseCheck input{width:auto}
-.smallgrid{display:grid;grid-template-columns:100px 1fr 90px 80px 80px;gap:10px}.pitchgrid{display:grid;grid-template-columns:1fr 80px 80px 80px 80px;gap:10px}.tickergrid{display:grid;grid-template-columns:1fr 120px 1fr 160px;gap:10px}
-.table{width:100%;border-collapse:collapse;font-size:14px}.table th,.table td{border-bottom:1px solid #19314a;padding:9px;text-align:left}.table th{color:var(--muted)}.table tr:hover,.table tr.selected{background:#0d376d}.tools{display:grid;grid-template-columns:1fr 170px 190px;gap:8px;margin-bottom:8px}.syncStatus{color:var(--muted);font-size:12px;margin-top:8px;min-height:16px}
-.footer{margin-top:12px;height:36px;border:1px solid #29445f;border-radius:8px;background:#071320;display:flex;align-items:center;padding:0 12px;color:var(--muted);font-size:12px}.ok{color:var(--green);font-weight:900}
+  /* ── Design tokens (broadcast pro) ── */
+  :root {
+    --bg: #0F0F11;
+    --card: #1A1A1E;
+    --border: #2A2A32;
+    --input: #26262B;
+    --label: #9BA3AF;
+    --text: #FAFAFA;
+    --electric: #3B82F6;
+    --h-input: 36px;
+  }
+
+  body { background: var(--bg); color: var(--text); font-family: Inter, Roboto, system-ui, sans-serif; }
+
+  /* ── Cards ── */
+  .lsl-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,.4), 0 4px 6px -4px rgba(0,0,0,.4);
+  }
+  .lsl-section-title {
+    margin: 0 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--label);
+  }
+
+  /* ── Labels ── */
+  .lsl-label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--label);
+  }
+  .lsl-label-row {
+    margin-bottom: 0;
+    width: 76px;
+    flex-shrink: 0;
+    text-align: right;
+    line-height: var(--h-input);
+  }
+
+  /* ── Inputs (sin amarillo, altura uniforme 36px) ── */
+  .lsl-input,
+  .lsl-select {
+    display: block;
+    width: 100%;
+    height: var(--h-input);
+    padding: 0 12px;
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+  }
+  .lsl-input::placeholder { color: #52525b; }
+  .lsl-input:hover, .lsl-select:hover { background: #2a2a30; border-color: #35353d; }
+  .lsl-input:focus, .lsl-select:focus {
+    outline: none;
+    border-color: var(--electric);
+    box-shadow: 0 0 0 3px rgba(59,130,246,.22);
+    background: #2a2a30;
+  }
+  .lsl-select {
+    appearance: none;
+    cursor: pointer;
+    padding-right: 32px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%239BA3AF' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+  }
+  .lsl-input-num { font-variant-numeric: tabular-nums; }
+
+  /* ── Player row (pixel-perfect alignment) ── */
+  .lsl-field-row {
+    display: grid;
+    grid-template-columns: 76px 1fr;
+    align-items: center;
+    gap: 12px;
+  }
+
+  /* ── Buttons (compact, gradient, hover 200ms) ── */
+  .lsl-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: var(--h-input);
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: linear-gradient(180deg, #32323a 0%, #25252c 100%);
+    color: #d4d4d8;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    cursor: pointer;
+    box-shadow: 0 1px 2px rgba(0,0,0,.5), 0 4px 10px rgba(0,0,0,.25);
+    transition: background .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease, transform .15s ease;
+    white-space: nowrap;
+  }
+  .lsl-btn svg { width: 14px; height: 14px; opacity: .8; transition: opacity .2s ease; }
+  .lsl-btn:hover {
+    background: linear-gradient(180deg, #3f3f48 0%, #2e2e36 100%);
+    border-color: #404048;
+    color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,.5), 0 8px 18px rgba(0,0,0,.35);
+  }
+  .lsl-btn:hover svg { opacity: 1; }
+  .lsl-btn:active { transform: scale(.98); }
+  .lsl-btn--primary {
+    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+    border-color: #3b82f6;
+    color: #eff6ff;
+  }
+  .lsl-btn--primary:hover {
+    background: linear-gradient(180deg, #60a5fa 0%, #3b82f6 100%);
+    border-color: #60a5fa;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(59,130,246,.3);
+  }
+  .lsl-btn--danger {
+    background: linear-gradient(180deg, #3f2226 0%, #2a1518 100%);
+    border-color: #5c2b32;
+    color: #fca5a5;
+  }
+  .lsl-btn--danger:hover {
+    background: linear-gradient(180deg, #5c2b32 0%, #3f2226 100%);
+    border-color: #f87171;
+    color: #fecaca;
+  }
+  .lsl-btn.is-active {
+    background: linear-gradient(180deg, #166534 0%, #14532d 100%);
+    border-color: #22c55e;
+    color: #bbf7d0;
+    box-shadow: 0 0 0 2px rgba(34,197,94,.35);
+  }
+
+  /* ── Ticker VS split ── */
+  .lsl-vs-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--h-input);
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #222228;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--label);
+  }
+  .lsl-vs-divider {
+    width: 1px;
+    height: 28px;
+    background: var(--border);
+    margin: 0 4px;
+  }
+
+  /* ── Table ── */
+  .lsl-table-wrap { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .lsl-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .lsl-table thead { background: #222228; }
+  .lsl-table th {
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--label);
+    border-bottom: 1px solid var(--border);
+  }
+  .lsl-table th:not(:last-child), .lsl-table td:not(:last-child) { border-right: 1px solid var(--border); }
+  .lsl-table th.num, .lsl-table td.num { text-align: right; }
+  .lsl-table td {
+    padding: 9px 12px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .lsl-table tbody tr { background: var(--card); cursor: pointer; transition: background .15s ease; }
+  .lsl-table tbody tr:nth-child(even) { background: #1c1c22; }
+  .lsl-table tbody tr:hover { background: #25252c; }
+  .lsl-table tbody tr.selected { background: #1e2a42; box-shadow: inset 2px 0 0 var(--electric); }
+  .lsl-table td.num { font-variant-numeric: tabular-nums; color: #d4d4d8; }
+  .lsl-table td.team { color: var(--label); }
+
+  /* ── Preview iframe ── */
+  .preview-iframe { width: 1280px; height: 720px; border: 0; transform: scale(.506); transform-origin: top left; }
+
+  /* ── Live pulse ── */
+  @keyframes live-pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+  .live-dot { animation: live-pulse 2s ease-in-out infinite; }
+
+  /* ── Status chip ── */
+  .lsl-status {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 12px;
+    background: var(--input);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 11px;
+    color: var(--label);
+    line-height: 1.45;
+  }
 </style>
 </head>
-<body>
-<div class="header"><span class="logo">LSL50</span><span class="live">LIVE</span><div class="title"><b>SISTEMA DE GRÁFICOS EN VIVO</b><div>Control de transmisión</div></div><div class="status">● CONECTADO</div></div>
-<div class="grid">
-<div><div class="panel"><h2>Vista previa en vivo</h2><div class="preview"><iframe src="/overlay.html"></iframe></div></div><div class="panel" style="margin-top:12px"><h2>Cuaderno en vivo + jugadores</h2><div class="tools" style="grid-template-columns:1fr 180px 170px 190px"><input id="search" placeholder="Buscar jugador..."><button class="gold" onclick="syncScorebook(false)">TRAER CUADERNO</button><button class="blue" onclick="toggleScorebookLive()">AUTO CUADERNO</button><button class="blue" onclick="syncPlayers(false)">ROSTER ADMIN</button></div><div class="tools" style="grid-template-columns:1fr 190px;margin-top:8px"><div class="syncStatus" id="scorebookStatus" style="margin:0">Fuente: manual (state.json)</div><button class="gold" onclick="syncPlayers(true)">ROSTER SEMIFINAL</button></div><table class="table"><thead><tr><th>#</th><th>Nombre</th><th>Equipo</th><th>AVG</th><th>HR</th><th>RBI</th></tr></thead><tbody id="players"></tbody></table><div class="syncStatus" id="syncStatus"></div></div></div>
-<div>
-<div class="panel"><h2>Control del juego</h2><div class="formgrid">
-<div><label>Equipo visitante</label><select id="visitorTeam"><option>Bucaneros</option><option>Caribeños</option><option>Cerveceros</option><option>Cubs</option><option>Hispanos</option><option>Sharks</option></select></div>
-<div><label>Equipo local</label><select id="homeTeam"><option>Caribeños</option><option>Bucaneros</option><option>Cerveceros</option><option>Cubs</option><option>Hispanos</option><option>Sharks</option></select></div>
-<div><label>Inning</label><select id="inning"><option>1RO</option><option>2DO</option><option>3RO</option><option>4TO</option><option>5TO</option><option>6TO</option><option>7MO</option><option>FINAL</option></select></div>
-<div><label>Score visitante</label><input id="visitorScore" type="number"></div><div><label>Score local</label><input id="homeScore" type="number"></div><div><label>Outs</label><input id="outs" type="number" min="0" max="3"></div>
-<div><label>Bolas</label><input id="balls" type="number" min="0" max="4"></div><div><label>Strikes</label><input id="strikes" type="number" min="0" max="3"></div><div><label>Bases ocupadas</label><div class="bases"><label class="baseCheck"><input id="first" type="checkbox">1B</label><label class="baseCheck"><input id="second" type="checkbox">2B</label><label class="baseCheck"><input id="third" type="checkbox">3B</label></div></div>
-</div><div class="buttons"><button class="gold" onclick="save()">ACTUALIZAR EN VIVO</button><button class="blue" onclick="resetCount()">RESET CONTEO</button><button class="red" onclick="nextInning()">FINALIZAR INNING</button></div></div>
-<div class="panel" style="margin-top:12px"><h2>Bateador actual</h2><div class="smallgrid"><div><label>Número</label><input id="batterNumber"></div><div><label>Nombre</label><input id="batterName"></div><div><label>AVG</label><input id="batterAvg"></div><div><label>HR</label><input id="batterHr"></div><div><label>RBI</label><input id="batterRbi"></div></div><div class="buttons" style="grid-template-columns:1fr 1fr"><button class="blue" onclick="selectHighlighted()">SELECCIONAR JUGADOR</button><button class="blue" onclick="nextPlayer()">SIGUIENTE BATEADOR</button></div></div>
-<div class="panel" style="margin-top:12px"><h2>Pitcher actual</h2><div class="pitchgrid"><div><label>Nombre</label><input id="pitcherName"></div><div><label>IP</label><input id="pitcherIp"></div><div><label>K</label><input id="pitcherK"></div><div><label>BB</label><input id="pitcherBb"></div><div><label>ER</label><input id="pitcherEr"></div></div><button class="blue" onclick="save()" style="margin-top:10px">CAMBIAR PITCHER</button></div>
-<div class="panel" style="margin-top:12px"><h2>Próximo juego / ticker</h2><div class="tickergrid"><div><label>Próximo juego</label><input id="nextGame"></div><div><label>Hora</label><input id="nextTime"></div><div><label>Web</label><input id="web"></div><button class="blue" onclick="save()" style="align-self:end">ACTUALIZAR TICKER</button></div></div>
-</div></div><div class="footer">LSL50 LIVE CONTROL CENTER v1.0 REAL&nbsp;&nbsp; <span class="ok">●</span>&nbsp;FUENTE OBS: http://127.0.0.1:5050/overlay.html</div>
+<body class="min-h-screen antialiased">
+
+<!-- HEADER -->
+<header class="mx-5 mt-5 mb-4 flex items-center gap-4 lsl-card px-5 py-3">
+  <div class="flex items-center gap-2.5">
+    <span class="text-xl font-bold tracking-tight">LSL50</span>
+    <span class="inline-flex items-center gap-1.5 rounded border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-red-300">
+      <span class="live-dot inline-block h-1.5 w-1.5 rounded-full bg-red-500"></span> Live
+    </span>
+  </div>
+  <div class="flex-1">
+    <p class="text-xs font-semibold uppercase tracking-[0.12em]">Sistema de gráficos en vivo</p>
+    <p class="mt-0.5 text-xs text-zinc-500">Panel de control · transmisión</p>
+  </div>
+  <div class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-emerald-400">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    Conectado
+  </div>
+</header>
+
+<!-- MAIN -->
+<main class="mx-5 grid grid-cols-1 gap-4 xl:grid-cols-[1.08fr_0.92fr]">
+
+  <!-- LEFT -->
+  <div class="flex flex-col gap-4">
+    <section class="lsl-card p-5">
+      <h2 class="lsl-section-title">Vista previa en vivo</h2>
+      <div class="h-[380px] overflow-hidden rounded-lg border border-[#2A2A32] bg-black">
+        <iframe src="/overlay.html" class="preview-iframe"></iframe>
+      </div>
+    </section>
+
+    <section class="lsl-card p-5">
+      <h2 class="lsl-section-title">Cuaderno en vivo · Jugadores</h2>
+
+      <div class="mb-4 flex flex-col gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <input id="search" type="search" placeholder="Buscar jugador…" class="lsl-input min-w-[180px] flex-1">
+          <button id="btnSyncScorebook" onclick="syncScorebook(false)" class="lsl-btn lsl-btn--primary">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9"/><polyline points="21 3 21 9 15 9"/></svg>
+            <span class="btn-label">Traer cuaderno</span>
+          </button>
+          <button id="btnAutoScorebook" onclick="toggleScorebookLive()" class="lsl-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span class="btn-label">Auto cuaderno</span>
+          </button>
+          <button onclick="syncPlayers(false)" class="lsl-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            <span class="btn-label">Roster admin</span>
+          </button>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <div id="scorebookStatus" class="lsl-status">Fuente: manual (state.json)</div>
+          <button onclick="syncPlayers(true)" class="lsl-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <span class="btn-label">Roster semifinal</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="lsl-table-wrap">
+        <table class="lsl-table">
+          <thead>
+            <tr>
+              <th class="num">#</th><th>Nombre</th><th>Equipo</th>
+              <th class="num">AVG</th><th class="num">HR</th><th class="num">RBI</th>
+            </tr>
+          </thead>
+          <tbody id="players"></tbody>
+        </table>
+      </div>
+      <p id="syncStatus" class="mt-2 min-h-[16px] text-[11px] text-zinc-500"></p>
+    </section>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="flex flex-col gap-4">
+
+    <section class="lsl-card p-5">
+      <h2 class="lsl-section-title">Control del juego</h2>
+      <div class="grid grid-cols-3 gap-3">
+        <div><label class="lsl-label">Visitante</label><select id="visitorTeam" class="lsl-select"></select></div>
+        <div><label class="lsl-label">Local</label><select id="homeTeam" class="lsl-select"></select></div>
+        <div><label class="lsl-label">Inning</label><select id="inning" class="lsl-select"><option>1RO</option><option>2DO</option><option>3RO</option><option>4TO</option><option>5TO</option><option>6TO</option><option>7MO</option><option>FINAL</option></select></div>
+        <div><label class="lsl-label">Score visit.</label><input id="visitorScore" type="number" class="lsl-input lsl-input-num"></div>
+        <div><label class="lsl-label">Score local</label><input id="homeScore" type="number" class="lsl-input lsl-input-num"></div>
+        <div><label class="lsl-label">Outs</label><input id="outs" type="number" min="0" max="3" class="lsl-input lsl-input-num"></div>
+        <div><label class="lsl-label">Bolas</label><input id="balls" type="number" min="0" max="4" class="lsl-input lsl-input-num"></div>
+        <div><label class="lsl-label">Strikes</label><input id="strikes" type="number" min="0" max="3" class="lsl-input lsl-input-num"></div>
+        <div>
+          <label class="lsl-label">Bases</label>
+          <div class="flex h-9 items-center gap-4">
+            <label class="flex cursor-pointer items-center gap-1.5 text-xs text-zinc-300"><input id="first" type="checkbox" class="accent-blue-500">1B</label>
+            <label class="flex cursor-pointer items-center gap-1.5 text-xs text-zinc-300"><input id="second" type="checkbox" class="accent-blue-500">2B</label>
+            <label class="flex cursor-pointer items-center gap-1.5 text-xs text-zinc-300"><input id="third" type="checkbox" class="accent-blue-500">3B</label>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 flex flex-wrap gap-2">
+        <button onclick="save()" class="lsl-btn lsl-btn--primary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+          <span class="btn-label">Actualizar en vivo</span>
+        </button>
+        <button onclick="resetCount()" class="lsl-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          <span class="btn-label">Reset conteo</span>
+        </button>
+        <button onclick="nextInning()" class="lsl-btn lsl-btn--danger">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 19 22 12 13 5 13 19"/></svg>
+          <span class="btn-label">Finalizar inning</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="lsl-card p-5">
+      <h2 class="lsl-section-title">Bateador actual</h2>
+      <div class="flex flex-col gap-2.5">
+        <div class="lsl-field-row"><label class="lsl-label lsl-label-row">Número</label><input id="batterNumber" type="text" class="lsl-input lsl-input-num"></div>
+        <div class="lsl-field-row"><label class="lsl-label lsl-label-row">Nombre</label><input id="batterName" type="text" class="lsl-input"></div>
+        <div class="lsl-field-row"><label class="lsl-label lsl-label-row">AVG</label><input id="batterAvg" type="text" class="lsl-input lsl-input-num"></div>
+        <div class="lsl-field-row"><label class="lsl-label lsl-label-row">HR</label><input id="batterHr" type="number" class="lsl-input lsl-input-num"></div>
+        <div class="lsl-field-row"><label class="lsl-label lsl-label-row">RBI</label><input id="batterRbi" type="number" class="lsl-input lsl-input-num"></div>
+      </div>
+      <div class="mt-4 flex gap-2">
+        <button onclick="selectHighlighted()" class="lsl-btn flex-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>
+          <span class="btn-label">Seleccionar</span>
+        </button>
+        <button onclick="nextPlayer()" class="lsl-btn flex-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          <span class="btn-label">Siguiente</span>
+        </button>
+      </div>
+    </section>
+
+    <section class="lsl-card p-5">
+      <h2 class="lsl-section-title">Pitcher actual</h2>
+      <div class="flex flex-col gap-2.5">
+        <div class="lsl-field-row"><label class="lsl-label lsl-label-row">Nombre</label><input id="pitcherName" type="text" class="lsl-input"></div>
+        <div class="lsl-field-row"><label class="lsl-label lsl-label-row">IP</label><input id="pitcherIp" type="text" class="lsl-input lsl-input-num"></div>
+        <div class="lsl-field-row"><label class="lsl-label lsl-label-row">K</label><input id="pitcherK" type="number" class="lsl-input lsl-input-num"></div>
+        <div class="lsl-field-row"><label class="lsl-label lsl-label-row">BB</label><input id="pitcherBb" type="number" class="lsl-input lsl-input-num"></div>
+        <div class="lsl-field-row"><label class="lsl-label lsl-label-row">ER</label><input id="pitcherEr" type="number" class="lsl-input lsl-input-num"></div>
+      </div>
+      <button onclick="save()" class="lsl-btn mt-4 w-full">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/></svg>
+        <span class="btn-label">Cambiar pitcher</span>
+      </button>
+    </section>
+
+    <!-- TICKER: split VISITANTE | VS | LOCAL -->
+    <section class="lsl-card p-5">
+      <h2 class="lsl-section-title">Próximo juego · Ticker</h2>
+      <input type="hidden" id="nextGame">
+
+      <div class="grid grid-cols-[1fr_auto_1fr] items-end gap-3">
+        <div>
+          <label class="lsl-label">Visitante</label>
+          <input id="tickerVisitor" type="text" placeholder="Equipo visitante" class="lsl-input">
+        </div>
+        <div class="flex items-center gap-1 pb-0">
+          <div class="lsl-vs-divider hidden sm:block"></div>
+          <span class="lsl-vs-badge">VS</span>
+          <div class="lsl-vs-divider hidden sm:block"></div>
+        </div>
+        <div>
+          <label class="lsl-label">Local</label>
+          <input id="tickerHome" type="text" placeholder="Equipo local" class="lsl-input">
+        </div>
+      </div>
+
+      <div class="mt-4 grid grid-cols-2 gap-3">
+        <div><label class="lsl-label">Hora</label><input id="nextTime" type="text" placeholder="11:30 AM" class="lsl-input"></div>
+        <div><label class="lsl-label">Web</label><input id="web" type="text" placeholder="legendssoftball50.com" class="lsl-input"></div>
+      </div>
+
+      <button onclick="saveTicker()" class="lsl-btn lsl-btn--primary mt-4 w-full">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/></svg>
+        <span class="btn-label">Actualizar ticker</span>
+      </button>
+      <p id="tickerStatus" class="mt-2 min-h-[16px] text-[11px] text-zinc-500"></p>
+    </section>
+  </div>
+</main>
+
+<footer class="mx-5 mb-5 mt-4 flex items-center gap-2 lsl-card px-4 py-2.5 text-[11px] text-zinc-500">
+  LSL50 Live Control Center v1.0 <span class="text-emerald-400">●</span> OBS: http://127.0.0.1:5050/overlay.html
+</footer>
+
 <script>
+(function initTeamSelects() {
+  const teams = ['Bucaneros','Caribeños','Cerveceros','Cubs','Hispanos','Sharks'];
+  document.getElementById('visitorTeam').innerHTML = teams.map((t,i)=>`<option${i===0?' selected':''}>${t}</option>`).join('');
+  document.getElementById('homeTeam').innerHTML = teams.map((t,i)=>`<option${i===1?' selected':''}>${t}</option>`).join('');
+})();
+
 let data=null, selectedIndex=0, scorebookLive=false, scorebookTimer=null, lastScorebookSig='';
 const SCOREBOOK_URL='http://127.0.0.1:8080/api/live-game-state.php';
 const PLAYERS_URL='http://127.0.0.1:8080/api/control-center-players.php';
+
+function setBtnLabel(id, text) {
+  const span = document.getElementById(id)?.querySelector('.btn-label');
+  if (span) span.textContent = text;
+}
+const TICKER_SEP = ' vs '; /* mismo formato que overlay.html y state.json */
+
+function splitNextGame(str) {
+  const s = String(str || '').trim();
+  if (!s) return ['', ''];
+  const m = s.match(/^(.+?)\s+(?:vs\.?|VS|@|v\.|contra)\s+(.+)$/i);
+  if (m) return [m[1].trim(), m[2].trim()];
+  return [s, ''];
+}
+
+/** Combina Visitante + Local → nextGame (campo que lee overlay y /api/state). */
+function mergeNextGame() {
+  const v = tickerVisitor.value.trim();
+  const h = tickerHome.value.trim();
+  if (v && h) nextGame.value = v + TICKER_SEP + h;
+  else if (v) nextGame.value = v;
+  else if (h) nextGame.value = h;
+  else nextGame.value = '';
+  return nextGame.value;
+}
+
+async function saveTicker() {
+  const merged = mergeNextGame();
+  const statusEl = document.getElementById('tickerStatus');
+  if (!merged) {
+    if (statusEl) statusEl.textContent = 'Ingresa al menos un equipo (Visitante o Local).';
+    return;
+  }
+  if (statusEl) statusEl.textContent = 'Guardando ticker…';
+  try {
+    data = fromForm();
+    await apiSave(data);
+    const time = nextTime.value.trim() || '—';
+    const site = web.value.trim() || '—';
+    if (statusEl) statusEl.textContent = `Ticker OK: ${merged} · ${time} · ${site}`;
+  } catch (e) {
+    if (statusEl) statusEl.textContent = 'Error al guardar. Verifica que el servidor :5050 esté activo.';
+  }
+}
+
 async function apiGet(){const r=await fetch('/api/state?ts='+Date.now());data=await r.json();return data}
 async function apiSave(d){await fetch('/api/state',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)});}
 async function fetchAdminPlayers(postseason=false){const suffix=postseason?'&postseason=1':'';const r=await fetch(PLAYERS_URL+'?ts='+Date.now()+suffix);if(!r.ok)throw new Error('Admin no disponible');return await r.json();}
@@ -45,19 +491,63 @@ async function fetchScorebook(gameId=0){const q=gameId?('&game_id='+gameId):'';c
 function v(id,val){document.getElementById(id).value=val}
 function setInningFromScorebook(label){const base=String(label||'').replace(/[▲▼]/g,'');const sel=document.getElementById('inning');if([...sel.options].some(o=>o.value===base))sel.value=base;else if([...sel.options].some(o=>o.value===label))sel.value=label;else{sel.value=base||'1RO';}}
 function applyOverlayToForm(overlay){if(!overlay)return;v('visitorTeam',overlay.visitorTeam);v('homeTeam',overlay.homeTeam);v('visitorScore',overlay.visitorScore);v('homeScore',overlay.homeScore);setInningFromScorebook(overlay.inning);v('outs',overlay.outs);first.checked=!!overlay.bases.first;second.checked=!!overlay.bases.second;third.checked=!!overlay.bases.third;if(overlay.batter){v('batterNumber',overlay.batter.number);v('batterName',overlay.batter.name);v('batterAvg',overlay.batter.avg);v('batterHr',overlay.batter.hr);v('batterRbi',overlay.batter.rbi);}}
-async function load(){const d=await apiGet(); v('visitorTeam',d.visitorTeam);v('homeTeam',d.homeTeam);v('visitorScore',d.visitorScore);v('homeScore',d.homeScore);setInningFromScorebook(d.inning);v('balls',d.balls);v('strikes',d.strikes);v('outs',d.outs);first.checked=d.bases.first;second.checked=d.bases.second;third.checked=d.bases.third;v('batterNumber',d.batter.number);v('batterName',d.batter.name);v('batterAvg',d.batter.avg);v('batterHr',d.batter.hr);v('batterRbi',d.batter.rbi);v('pitcherName',d.pitcher.name);v('pitcherIp',d.pitcher.ip);v('pitcherK',d.pitcher.k);v('pitcherBb',d.pitcher.bb);v('pitcherEr',d.pitcher.er);v('nextGame',d.ticker.nextGame);v('nextTime',d.ticker.time);v('web',d.ticker.web);renderPlayers();}
-function fromForm(){return {...data,visitorTeam:visitorTeam.value,homeTeam:homeTeam.value,visitorScore:+visitorScore.value,homeScore:+homeScore.value,inning:inning.value,balls:+balls.value,strikes:+strikes.value,outs:+outs.value,bases:{first:first.checked,second:second.checked,third:third.checked},batter:{...data.batter,number:batterNumber.value===''?'':(+batterNumber.value||batterNumber.value),name:batterName.value,avg:batterAvg.value,hr:+batterHr.value,rbi:+batterRbi.value,photo:(data.batter&&data.batter.photo)||''},pitcher:{...data.pitcher,name:pitcherName.value,ip:pitcherIp.value,k:+pitcherK.value,bb:+pitcherBb.value,er:+pitcherEr.value},ticker:{nextGame:nextGame.value,time:nextTime.value,web:web.value}}}
+async function load(){
+  const d=await apiGet();
+  v('visitorTeam',d.visitorTeam);v('homeTeam',d.homeTeam);v('visitorScore',d.visitorScore);v('homeScore',d.homeScore);
+  setInningFromScorebook(d.inning);v('balls',d.balls);v('strikes',d.strikes);v('outs',d.outs);
+  first.checked=d.bases.first;second.checked=d.bases.second;third.checked=d.bases.third;
+  v('batterNumber',d.batter.number);v('batterName',d.batter.name);v('batterAvg',d.batter.avg);v('batterHr',d.batter.hr);v('batterRbi',d.batter.rbi);
+  v('pitcherName',d.pitcher.name);v('pitcherIp',d.pitcher.ip);v('pitcherK',d.pitcher.k);v('pitcherBb',d.pitcher.bb);v('pitcherEr',d.pitcher.er);
+  v('nextGame',d.ticker.nextGame);v('nextTime',d.ticker.time);v('web',d.ticker.web);
+  const [tv,th]=splitNextGame(d.ticker.nextGame); v('tickerVisitor',tv); v('tickerHome',th);
+  mergeNextGame();
+  renderPlayers();
+}
+function fromForm(){
+  mergeNextGame();
+  return {...data,visitorTeam:visitorTeam.value,homeTeam:homeTeam.value,visitorScore:+visitorScore.value,homeScore:+homeScore.value,inning:inning.value,balls:+balls.value,strikes:+strikes.value,outs:+outs.value,bases:{first:first.checked,second:second.checked,third:third.checked},batter:{...data.batter,number:batterNumber.value===''?'':(+batterNumber.value||batterNumber.value),name:batterName.value,avg:batterAvg.value,hr:+batterHr.value,rbi:+batterRbi.value,photo:(data.batter&&data.batter.photo)||''},pitcher:{...data.pitcher,name:pitcherName.value,ip:pitcherIp.value,k:+pitcherK.value,bb:+pitcherBb.value,er:+pitcherEr.value},ticker:{nextGame:nextGame.value,time:nextTime.value,web:web.value}}
+}
 async function save(){data=fromForm();await apiSave(data);}
 async function resetCount(){balls.value=0;strikes.value=0;await save();}
 async function nextInning(){balls.value=0;strikes.value=0;outs.value=0;first.checked=false;second.checked=false;third.checked=false;await save();}
-function renderPlayers(){const q=(search.value||'').toLowerCase();players.innerHTML='';const list=(data.players||[]).filter(p=>p.name.toLowerCase().includes(q)||p.team.toLowerCase().includes(q)||String(p.number).includes(q));if(!list.length){players.innerHTML='<tr><td colspan="6">No hay jugadores para mostrar.</td></tr>';return;}list.forEach((p,i)=>{const tr=document.createElement('tr');if(i===selectedIndex)tr.className='selected';tr.innerHTML=`<td>${p.number}</td><td>${p.name}</td><td>${p.team}</td><td>${p.avg}</td><td>${p.hr}</td><td>${p.rbi}</td>`;tr.onclick=()=>{selectedIndex=i;fillBatter(p);renderPlayers();};players.appendChild(tr);});}
+function renderPlayers(){
+  const q=(search.value||'').toLowerCase();
+  players.innerHTML='';
+  const list=(data.players||[]).filter(p=>p.name.toLowerCase().includes(q)||p.team.toLowerCase().includes(q)||String(p.number).includes(q));
+  if(!list.length){players.innerHTML='<tr><td colspan="6" class="px-3 py-5 text-center text-zinc-500">No hay jugadores.</td></tr>';return;}
+  list.forEach((p,i)=>{
+    const tr=document.createElement('tr');
+    if(i===selectedIndex) tr.className='selected';
+    tr.innerHTML=`<td class="num">${p.number}</td><td>${p.name}</td><td class="team">${p.team}</td><td class="num">${p.avg}</td><td class="num">${p.hr}</td><td class="num">${p.rbi}</td>`;
+    tr.onclick=()=>{selectedIndex=i;fillBatter(p);renderPlayers();};
+    players.appendChild(tr);
+  });
+}
 function fillBatter(p){batterNumber.value=p.number;batterName.value=p.name;batterAvg.value=p.avg;batterHr.value=p.hr;batterRbi.value=p.rbi;}
 async function selectHighlighted(){const p=data.players[selectedIndex]||data.players[0];fillBatter(p);await save();}
 async function nextPlayer(){selectedIndex=(selectedIndex+1)%data.players.length;fillBatter(data.players[selectedIndex]);renderPlayers();await save();}
-async function syncPlayers(postseason=false){syncStatus.textContent=postseason?'Cargando roster elegible de semifinal...':'Conectando con el admin local...';try{const payload=await fetchAdminPlayers(postseason);if(!payload.ok)throw new Error(payload.error||'Respuesta inválida');if(!payload.players.length){syncStatus.textContent=postseason?'No hay jugadores elegibles: requieren 3 juegos legales con al menos 1 PA.':'El admin local no tiene jugadores cargados todavía.';return;}data=fromForm();data.players=payload.players;selectedIndex=0;fillBatter(data.players[0]);await apiSave(data);renderPlayers();syncStatus.textContent=postseason?`Roster semifinal sincronizado: ${payload.count} jugadores elegibles.`:`Sincronizados ${payload.count} jugadores desde el admin local.`;}catch(e){syncStatus.textContent='No se pudo sincronizar. Abre el admin local en el puerto 8080.';}}
-async function syncScorebook(force=true){try{const payload=await fetchScorebook();if(!payload.ok)throw new Error(payload.error||'Respuesta inválida');if(!payload.has_game||!payload.overlay){scorebookStatus.textContent='Cuaderno: sin juego abierto en la temporada.';return false;}const o=payload.overlay;const sig=[payload.game.id,o.visitorScore,o.homeScore,o.inning,o.outs,o.bases.first,o.bases.second,o.bases.third,o.batter&&o.batter.id,payload.context&&payload.context.play_count].join('|');if(!force&&sig===lastScorebookSig)return true;lastScorebookSig=sig;data=fromForm();applyOverlayToForm(o);data=fromForm();data.inning=o.inning;data.scorebook={game_id:payload.game.id,half:payload.context.half,play_count:payload.context.play_count,last_play:payload.last_play,synced_at:new Date().toISOString()};await apiSave(data);const play=payload.last_play?` · última: ${payload.last_play.label}`:'';scorebookStatus.textContent=`Cuaderno #${payload.game.id}: ${o.visitorTeam} ${o.visitorScore}-${o.homeScore} ${o.homeTeam} · ${o.inning} · O${o.outs}${play}`;return true;}catch(e){scorebookStatus.textContent='No se pudo leer el cuaderno. Verifica :8080 (api/live-game-state.php).';return false;}}
-function toggleScorebookLive(){scorebookLive=!scorebookLive;if(scorebookTimer){clearInterval(scorebookTimer);scorebookTimer=null;}if(scorebookLive){scorebookStatus.textContent='AUTO ON — leyendo cuaderno cada 2s...';syncScorebook(true);scorebookTimer=setInterval(()=>syncScorebook(false),2000);}else{scorebookStatus.textContent='AUTO OFF — fuente manual (state.json)';}}
-search.oninput=renderPlayers;load();
+async function syncPlayers(postseason=false){syncStatus.textContent=postseason?'Cargando roster semifinal...':'Conectando admin...';try{const payload=await fetchAdminPlayers(postseason);if(!payload.ok)throw new Error(payload.error||'Inválido');if(!payload.players.length){syncStatus.textContent='Sin jugadores disponibles.';return;}data=fromForm();data.players=payload.players;selectedIndex=0;fillBatter(data.players[0]);await apiSave(data);renderPlayers();syncStatus.textContent=`Sincronizados ${payload.count} jugadores.`;}catch(e){syncStatus.textContent='Error: admin en puerto 8080 no disponible.';}}
+async function syncScorebook(force=true){try{const payload=await fetchScorebook();if(!payload.ok)throw new Error(payload.error||'Inválido');if(!payload.has_game||!payload.overlay){scorebookStatus.textContent='Sin juego abierto.';return false;}const o=payload.overlay;const sig=[payload.game.id,o.visitorScore,o.homeScore,o.inning,o.outs,o.bases.first,o.bases.second,o.bases.third,o.batter&&o.batter.id,payload.context&&payload.context.play_count].join('|');if(!force&&sig===lastScorebookSig)return true;lastScorebookSig=sig;data=fromForm();applyOverlayToForm(o);data=fromForm();data.inning=o.inning;data.scorebook={game_id:payload.game.id,half:payload.context.half,play_count:payload.context.play_count,last_play:payload.last_play,synced_at:new Date().toISOString()};await apiSave(data);const play=payload.last_play?` · ${payload.last_play.label}`:'';scorebookStatus.textContent=`#${payload.game.id}: ${o.visitorTeam} ${o.visitorScore}-${o.homeScore} ${o.homeTeam} · ${o.inning} · O${o.outs}${play}`;return true;}catch(e){scorebookStatus.textContent='Cuaderno no disponible (:8080).';return false;}}
+function toggleScorebookLive(){
+  scorebookLive=!scorebookLive;
+  const btn=document.getElementById('btnAutoScorebook');
+  if(scorebookTimer){clearInterval(scorebookTimer);scorebookTimer=null;}
+  if(scorebookLive){
+    btn.classList.add('is-active');
+    setBtnLabel('btnAutoScorebook','Auto ON');
+    scorebookStatus.textContent='AUTO ON — poll cada 2s';
+    syncScorebook(true);
+    scorebookTimer=setInterval(()=>syncScorebook(false),2000);
+  }else{
+    btn.classList.remove('is-active');
+    setBtnLabel('btnAutoScorebook','Auto cuaderno');
+    scorebookStatus.textContent='AUTO OFF — manual (state.json)';
+  }
+}
+tickerVisitor.addEventListener('input', mergeNextGame);
+tickerHome.addEventListener('input', mergeNextGame);
+search.oninput=renderPlayers;
+load();
 </script>
 </body>
 </html>
