@@ -138,19 +138,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
   }
 
   if ($action === "sync_youtube") {
-    $apiKey = lsl_setting($pdo, "youtube_api_key", "");
-    $channel = lsl_setting($pdo, "ai_youtube_channel_url", "https://www.youtube.com/@LegendsSoftballLeague50");
-    if ($apiKey === "") {
-      flash("Falta guardar la YouTube API Key.");
-    } else {
-      $result = ai_youtube_recent_videos($apiKey, $channel, 8);
-      if ($result["ok"]) {
-        lsl_set_setting($pdo, "ai_youtube_recent_videos", json_encode($result["videos"], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
-        lsl_set_setting($pdo, "ai_youtube_channel_id", $result["channel_id"] ?? "");
-        flash("YouTube conectado. Videos recientes sincronizados: " . count($result["videos"]) . ".");
-      } else {
-        flash("YouTube API: " . ($result["error"] ?? "No se pudo sincronizar."));
-      }
+    try {
+      \Lsl50\Services\YoutubeSyncService::syncCredentialsFromEnv($pdo);
+      $result = \Lsl50\Services\YoutubeSyncService::synchronize($pdo, $seasonId, false, 12);
+      flash("YouTube sincronizado: " . $result["videos_fetched"] . " videos, " . $result["linked"] . " juegos vinculados.");
+    } catch (Throwable $e) {
+      flash("YouTube API: " . $e->getMessage());
     }
   }
 
@@ -226,7 +219,7 @@ $clipSeconds = lsl_setting($pdo, "ai_clip_seconds", "45");
 $editorialStyle = lsl_setting($pdo, "ai_editorial_style", "Profesional deportivo, claro, positivo y breve.");
 $openAiModel = lsl_setting($pdo, "openai_model", "gpt-4.1-mini");
 $hasOpenAiKey = lsl_setting($pdo, "openai_api_key", "") !== "";
-$hasYoutubeKey = lsl_setting($pdo, "youtube_api_key", "") !== "";
+$hasYoutubeKey = \Lsl50\Services\YoutubeSyncService::isConfigured($pdo);
 $youtubeChannelId = lsl_setting($pdo, "ai_youtube_channel_id", "");
 $recentVideos = json_decode(lsl_setting($pdo, "ai_youtube_recent_videos", "[]"), true) ?: [];
 

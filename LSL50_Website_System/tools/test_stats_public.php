@@ -16,6 +16,7 @@ use Lsl50\Services\AiNewsGenerator;
 use Lsl50\Services\AppSettingsService;
 use Lsl50\Services\PublicStatsService;
 use Lsl50\Services\StatsEngine;
+use Lsl50\Services\YoutubeSyncService;
 
 $passed = 0;
 $failed = 0;
@@ -61,6 +62,15 @@ $pitchWins = StatsEngine::pitcherWinLeaders($pdo, $seasonId, 5);
 assert_public(is_array($pitchWins), "pitcherWinLeaders returns array");
 
 assert_public(!method_exists(\Lsl50\Services\LeaderboardService::class, "departments"), "LeaderboardService departments removed");
+
+$ytScore = YoutubeSyncService::scoreVideoForGame(
+  ["title" => "Cubs vs Bucaneros LSL50 Julio 2026", "published_date" => "2026-07-11"],
+  ["home_name" => "Cubs", "away_name" => "Bucaneros", "game_date" => "2026-07-11"]
+);
+assert_public($ytScore >= 45, "YoutubeSyncService scores date+title match");
+
+$creds = YoutubeSyncService::resolveCredentials($pdo);
+assert_public(is_array($creds["source"]), "YoutubeSyncService resolveCredentials source");
 
 assert_public(AppSettingsService::parseBool("1") === true, "AppSettingsService parseBool true");
 assert_public(AppSettingsService::parseBool("0") === false, "AppSettingsService parseBool false");
