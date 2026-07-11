@@ -46,7 +46,7 @@ final class AiNewsGenerator
       "ai_editorial_style",
       "profesional, emocionante, periodismo deportivo en español, voz de liga premium"
     );
-    $openAiKey = trim(lsl_setting($pdo, "openai_api_key", ""));
+    $openAiKey = trim(lsl_setting($pdo, "openai_api_key", "") ?: (lsl_env("OPENAI_API_KEY") ?? ""));
     $model = lsl_setting($pdo, "openai_model", "gpt-4.1-mini");
 
     $provider = "local-stats";
