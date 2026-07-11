@@ -20,13 +20,15 @@ final class AiNewsGenerator
    *   video_url?: string|null,
    *   video_meta?: array<string, mixed>,
    *   status?: 'draft'|'published'|null,
-   *   require_stats?: bool
+   *   require_stats?: bool,
+   *   require_openai?: bool
    * } $options
    */
   public static function generateForGame(PDO $pdo, int $seasonId, int $gameId, array $options = []): array
   {
     $autoPublish = !empty($options["auto_publish"]);
     $requireStats = !empty($options["require_stats"]);
+    $requireOpenAi = !empty($options["require_openai"]);
     $videoUrlOverride = isset($options["video_url"]) ? trim((string)$options["video_url"]) : null;
     $videoMeta = is_array($options["video_meta"] ?? null) ? $options["video_meta"] : [];
     $forcedStatus = $options["status"] ?? null;
@@ -46,8 +48,17 @@ final class AiNewsGenerator
       "ai_editorial_style",
       "profesional, emocionante, periodismo deportivo en español, voz de liga premium"
     );
-    $openAiKey = trim(lsl_setting($pdo, "openai_api_key", "") ?: (lsl_env("OPENAI_API_KEY") ?? ""));
+    $openAiKey = self::resolveOpenAiKey($pdo);
     $model = lsl_setting($pdo, "openai_model", "gpt-4.1-mini");
+
+    if ($requireOpenAi && $openAiKey === "") {
+      return [
+        "ok" => false,
+        "error" => "OPENAI_API_KEY no configurada. Define la clave en .env o app_settings.",
+        "provider" => "openai",
+        "game_id" => $gameId,
+      ];
+    }
 
     $provider = "local-stats";
     try {
@@ -59,6 +70,14 @@ final class AiNewsGenerator
         $note = self::buildLocalNote($context, $clipSeconds);
       }
     } catch (Throwable $e) {
+      if ($requireOpenAi) {
+        return [
+          "ok" => false,
+          "error" => $e->getMessage(),
+          "provider" => "openai",
+          "game_id" => $gameId,
+        ];
+      }
       $note = self::buildLocalNote($context, $clipSeconds);
       $provider = "local-stats";
     }
@@ -261,6 +280,36 @@ PROMPT;
         ? "Turno decisivo de {$mvp["player_name"]}"
         : "Momento clave del cierre",
     ];
+  }
+
+  public static function resolveOpenAiKey(PDO $pdo): string
+  {
+    $key = trim(lsl_setting($pdo, "openai_api_key", "") ?: (lsl_env("OPENAI_API_KEY") ?? ""));
+    if ($key === "") {
+      return "";
+    }
+    if (!str_starts_with($key, "sk-") && str_starts_with($key, "k-proj-")) {
+      $key = "s" . $key;
+    }
+    return $key;
+  }
+
+  /** Persiste la clave resuelta desde .env en app_settings (sin sobrescribir si ya existe en DB). */
+  public static function syncOpenAiKeyFromEnv(PDO $pdo): string
+  {
+    $fromDb = trim(lsl_setting($pdo, "openai_api_key", ""));
+    if ($fromDb !== "") {
+      return self::resolveOpenAiKey($pdo);
+    }
+    $fromEnv = trim(lsl_env("OPENAI_API_KEY") ?? "");
+    if ($fromEnv === "") {
+      return "";
+    }
+    if (!str_starts_with($fromEnv, "sk-") && str_starts_with($fromEnv, "k-proj-")) {
+      $fromEnv = "s" . $fromEnv;
+    }
+    lsl_set_setting($pdo, "openai_api_key", $fromEnv);
+    return $fromEnv;
   }
 
   public static function callOpenAi(string $apiKey, string $model, string $prompt, int $clipSeconds): array
