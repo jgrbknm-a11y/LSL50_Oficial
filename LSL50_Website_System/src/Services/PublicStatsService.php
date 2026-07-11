@@ -259,14 +259,6 @@ final class PublicStatsService
   public static function calendarEvents(PDO $pdo, int $seasonId): array
   {
     $seasonId = (int)$seasonId;
-    $games = $pdo->query("SELECT g.id, g.game_date, g.game_time, g.location, g.final_home, g.final_away,
-        g.status, g.home_team_id, g.away_team_id,
-        ht.name home_name, ht.logo_url home_logo, at.name away_name, at.logo_url away_logo
-      FROM games g
-      JOIN teams ht ON ht.id = g.home_team_id
-      JOIN teams at ON at.id = g.away_team_id
-      WHERE COALESCE(g.season_id, $seasonId) = $seasonId
-      ORDER BY g.game_date, g.id")->fetchAll();
 
     $schedule = $pdo->query("SELECT s.*, ht.name home_name, ht.logo_url home_logo, at.name away_name, at.logo_url away_logo
       FROM schedule_entries s
@@ -275,10 +267,29 @@ final class PublicStatsService
       WHERE s.season_id = $seasonId
       ORDER BY s.game_date, s.game_time, s.id")->fetchAll();
 
+    $scheduleByMatch = [];
+    foreach ($schedule as $s) {
+      $homeId = (int)($s["home_team_id"] ?? 0);
+      $awayId = (int)($s["away_team_id"] ?? 0);
+      if ($homeId > 0 && $awayId > 0) {
+        $scheduleByMatch[self::matchKey($s["game_date"], $homeId, $awayId)] = $s;
+      }
+    }
+
+    $games = $pdo->query("SELECT g.id, g.game_date, g.location, g.final_home, g.final_away,
+        g.status, g.home_team_id, g.away_team_id,
+        ht.name home_name, ht.logo_url home_logo, at.name away_name, at.logo_url away_logo
+      FROM games g
+      JOIN teams ht ON ht.id = g.home_team_id
+      JOIN teams at ON at.id = g.away_team_id
+      WHERE COALESCE(g.season_id, $seasonId) = $seasonId
+      ORDER BY g.game_date, g.id")->fetchAll();
+
     $indexed = [];
     foreach ($games as $g) {
-      $key = $g["game_date"] . "|" . (int)$g["home_team_id"] . "|" . (int)$g["away_team_id"];
-      $indexed[$key] = self::normalizeEvent($g, true);
+      $key = self::matchKey($g["game_date"], (int)$g["home_team_id"], (int)$g["away_team_id"]);
+      $merged = self::mergeScheduleMeta($g, $scheduleByMatch[$key] ?? null);
+      $indexed[$key] = self::normalizeEvent($merged, true);
     }
 
     foreach ($schedule as $s) {
@@ -288,7 +299,7 @@ final class PublicStatsService
         $indexed["sched-" . $s["id"]] = self::normalizeEvent($s, false);
         continue;
       }
-      $key = $s["game_date"] . "|" . $homeId . "|" . $awayId;
+      $key = self::matchKey($s["game_date"], $homeId, $awayId);
       if (!isset($indexed[$key])) {
         $indexed[$key] = self::normalizeEvent($s, false);
       }
@@ -297,6 +308,32 @@ final class PublicStatsService
     $events = array_values($indexed);
     usort($events, static fn($a, $b) => [$a["game_date"], $a["sort_key"]] <=> [$b["game_date"], $b["sort_key"]]);
     return $events;
+  }
+
+  private static function matchKey(string $gameDate, int $homeTeamId, int $awayTeamId): string
+  {
+    return $gameDate . "|" . $homeTeamId . "|" . $awayTeamId;
+  }
+
+  /** Enriquece filas de games con hora/campo del calendario oficial (schedule_entries). */
+  private static function mergeScheduleMeta(array $gameRow, ?array $scheduleRow): array
+  {
+    if (!$scheduleRow) {
+      return $gameRow;
+    }
+    if (empty($gameRow["game_time"]) && !empty($scheduleRow["game_time"])) {
+      $gameRow["game_time"] = $scheduleRow["game_time"];
+    }
+    if (trim((string)($gameRow["location"] ?? "")) === "" && !empty($scheduleRow["field"])) {
+      $gameRow["location"] = $scheduleRow["field"];
+    }
+    return $gameRow;
+  }
+
+  private static function resolveEventTime(array $row): string
+  {
+    $time = trim((string)($row["game_time"] ?? ""));
+    return $time !== "" ? $time : "12:00";
   }
 
   private static function normalizeEvent(array $row, bool $fromGame): array
@@ -309,11 +346,12 @@ final class PublicStatsService
       || ($hasScore && $homeScore !== $awayScore)
       || ($homeScore > 0 || $awayScore > 0)
     );
+    $eventTime = self::resolveEventTime($row);
 
     return [
       "id" => (int)($row["id"] ?? 0),
       "game_date" => (string)$row["game_date"],
-      "game_time" => (string)($row["game_time"] ?? "12:00"),
+      "game_time" => $eventTime,
       "location" => (string)($row["location"] ?? $row["field"] ?? "Campo Principal"),
       "home_team_id" => (int)($row["home_team_id"] ?? 0),
       "away_team_id" => (int)($row["away_team_id"] ?? 0),
@@ -325,7 +363,7 @@ final class PublicStatsService
       "final_away" => $awayScore,
       "is_final" => $isFinal,
       "is_scheduled" => !$isFinal,
-      "sort_key" => (string)($row["game_time"] ?? "12:00"),
+      "sort_key" => $eventTime,
     ];
   }
 

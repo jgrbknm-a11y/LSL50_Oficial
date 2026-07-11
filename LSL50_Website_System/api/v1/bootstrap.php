@@ -24,5 +24,20 @@ function api_v1_json(array $payload, int $code = 200): void
 function api_v1_season(PDO $pdo): array
 {
   $season = active_season($pdo);
-  return ["id" => (int)$season["id"], "name" => $season["name"] ?? ""];
+  return ["id" => (int)$season["id"], "name" => (string)($season["name"] ?? "")];
+}
+
+function api_v1_query_bool(string $key, bool $default = false): bool
+{
+  if (!isset($_GET[$key])) {
+    return $default;
+  }
+  $raw = strtolower(trim((string)$_GET[$key]));
+  if (in_array($raw, ["1", "true", "yes", "on"], true)) {
+    return true;
+  }
+  if (in_array($raw, ["0", "false", "no", "off"], true)) {
+    return false;
+  }
+  return $default;
 }

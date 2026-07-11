@@ -1,9 +1,11 @@
 <?php
 /**
- * PHP built-in server router for the main website + admin panel.
+ * Front controller unificado — dev server (php -S) y Apache (.htaccess).
  *
- * Usage:
+ * Dev:
  *   php -S 127.0.0.1:8080 -t LSL50_Website_System LSL50_Website_System/router.php
+ *
+ * Apache: RewriteRule ^ router.php [L] en .htaccess
  */
 
 $uri = urldecode(parse_url($_SERVER["REQUEST_URI"] ?? "/", PHP_URL_PATH) ?: "/");
@@ -24,7 +26,8 @@ if ($blocked) {
 $docRoot = rtrim($_SERVER["DOCUMENT_ROOT"] ?? __DIR__, "/");
 $file = $docRoot . $uri;
 
-if ($uri !== "/" && is_file($file)) {
+// PHP built-in server: dejar servir archivos estáticos y .php directos existentes.
+if (PHP_SAPI === "cli-server" && $uri !== "/" && is_file($file)) {
   return false;
 }
 
@@ -39,6 +42,7 @@ $routes = [
   "/noticias" => "noticias.php",
   "/juego" => "juego.php",
   "/admin" => "admin/index.php",
+  "/api/v1/standings" => "api/v1/standings.php",
 ];
 
 if (isset($routes[$uri])) {
@@ -60,4 +64,7 @@ if ($uri === "/news.php" || str_starts_with($uri, "/news.php")) {
   }
 }
 
-return false;
+http_response_code(404);
+header("Content-Type: text/plain; charset=utf-8");
+echo "404 Not Found";
+return true;

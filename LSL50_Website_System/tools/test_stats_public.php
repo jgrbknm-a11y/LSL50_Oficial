@@ -10,6 +10,7 @@ require __DIR__ . "/../config.php";
 require __DIR__ . "/../src/autoload.php";
 require_once __DIR__ . "/../admin/services/ai_news_generator.php";
 
+use Lsl50\Services\PublicStatsService;
 use Lsl50\Services\StatsEngine;
 
 $passed = 0;
@@ -81,6 +82,21 @@ if ($standings) {
   assert_public(isset($standings[0]["streak"]), "standings row has streak");
   assert_public(isset($standings[0]["l10"]), "standings row has l10");
 }
+
+$calendar = PublicStatsService::calendarEvents($pdo, $seasonId);
+assert_public(is_array($calendar), "calendarEvents returns array");
+if ($calendar) {
+  assert_public(isset($calendar[0]["game_time"]), "calendar event has game_time");
+  assert_public(isset($calendar[0]["sort_key"]), "calendar event has sort_key");
+}
+$byMonth = PublicStatsService::calendarByMonth($pdo, $seasonId);
+assert_public(is_array($byMonth), "calendarByMonth returns array");
+
+$apiPayload = \Lsl50\Api\V1\StandingsResource::build($pdo, ["id" => $seasonId, "name" => (string)$season["name"]], true);
+assert_public(($apiPayload["ok"] ?? false) === true, "StandingsResource build ok");
+assert_public(isset($apiPayload["standings"][0]["form"]["streak"]), "API standings has streak");
+assert_public(isset($apiPayload["standings"][0]["form"]["last_10"]), "API standings has last_10");
+assert_public(isset($apiPayload["standings"][0]["record"]["pct_display"]), "API standings has pct_display");
 
 $gameId = (int)$pdo->query("SELECT id FROM games ORDER BY id DESC LIMIT 1")->fetchColumn();
 if ($gameId > 0) {
